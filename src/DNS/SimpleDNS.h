@@ -7,7 +7,11 @@
 
 #include <gtest/gtest.h>
 #include <tr1/unordered_map>
+
 #include <cassert>
+#include <cstdarg>
+
+#include "Common/Utils.h"
 #include "Common/Signal.h"
 #include "DNS/DNS.h"
 
@@ -16,14 +20,15 @@ using std::tr1::unordered_map;
 class SimpleDNS : public DNS {
  public:
   // The constructor simply needs a port to listen for lookups
-  explicit SimpleDNS(unsigned short port) : port_(port) {}
+  explicit SimpleDNS(unsigned short port) : port_(port),
+    domain_(NETv4), transport_layer_(UDP), protocol_(NO_TYPE) {}
 
   // Null destructor
   virtual ~SimpleDNS() {}
 
   // Server-like start and stop
   virtual bool Start();
-  virtual bool ShutDown();
+  virtual bool ShutDown(const char* format = NULL, ...);
 
   // Declare friend tests for access to private methods
   friend class SimpleDNSTest;
@@ -50,6 +55,12 @@ class SimpleDNS : public DNS {
 
   // We maintain which port we are listening for incoming lookups on
   unsigned short port_;
+  int listener_;
+
+  // Keep connectivity member variables
+  Domain domain_;
+  TransportLayer transport_layer_;
+  Protocol protocol_;
 };
 
 #endif  // _PERMANENTIP_DNS_SIMPLEDNS_H_

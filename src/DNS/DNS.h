@@ -15,7 +15,7 @@ class DNS {
   // SIGINT for shutting down).  The shutdown method incidentally acts merely
   // as a SIGINT handler and cleanup.
   virtual bool Start() = 0;
-  virtual bool ShutDown() = 0;
+  virtual bool ShutDown(const char* format, ...) = 0;
 
  protected:
   // Every DNS should have the ability to privately add a namespace to its
