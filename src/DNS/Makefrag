@@ -1,0 +1,38 @@
+OBJDIRS += DNS
+
+# relative to $(TOP), i.e. DNS/*.cc
+DNS_SRCS := DNS/SimpleDNS.cc
+
+# Build files only if they exist.
+DNS_SRCS := $(wildcard $(DNS_SRCS))
+
+DNS_OBJS := $(patsubst %.cc, $(OBJDIR)/%.o, $(DNS_SRCS))
+
+DNS_TEST_SRCS := $(wildcard DNS/*Test.cc)
+DNS_TEST_OBJS := $(patsubst %.cc, $(OBJDIR)/%.o, $(DNS_TEST_SRCS))
+DNS_TESTS     := $(patsubst %.cc, $(OBJDIR)/%, $(DNS_TEST_SRCS))
+
+TESTS += test-DNS
+
+all: DNS-all
+
+DNS-all: DNS DNS-tests
+DNS: $(DNS_OBJS)
+DNS-tests: $(DNS_TESTS)
+
+$(OBJDIR)/DNS/%.o: DNS/%.cc
+	@echo + cxx $<
+	@mkdir -p $(@D)
+	$(V)$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/DNS/%Test: $(OBJDIR)/DNS/%Test.o $(DNS_OBJS)
+	@echo + ld $@
+	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+
+test-DNS: $(DNS_TESTS)
+	@for a in $(DNS_TESTS); do \
+		echo == $$a ==; \
+		LD_LIBRARY_PATH=$(GTEST)/lib/.libs $$a; \
+	done
+
+.PHONY: DNS-all DNS DNS-tests test-DNS

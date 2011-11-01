@@ -2,8 +2,8 @@
 //
 // This is a standard header file for various connectivity switches
 
-#ifndef _P2PMIP_COMMON_TYPES_H_
-#define _P2PMIP_COMMON_TYPES_H_
+#ifndef _PERMANENTIP_COMMON_TYPES_H_
+#define _PERMANENTIP_COMMON_TYPES_H_
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -18,15 +18,16 @@
 #include <cstdio>
 #include <cstdarg>
 
-#define IPAddress char*
-#define STATICIPADDRESS(MSG) char MSG[INET_ADDRSTRLEN + 1]
-#define Packets std::string
+#define LogicalAddress string
+#define PhysicalAddress string
 
 #define IP_NAME_LENGTH 20
 #define IP_PORT_LENGTH 10
 #define IPv6_ADDR_LENGTH 16
 
 #define FULL_SUBNET 16777215
+
+using std::string;
 
 enum TransportLayer {
   RAW = SOCK_RAW,
@@ -78,28 +79,31 @@ static inline int GetCurrentIPAddress() {
   struct ifaddrs *if_address, *if_struct;
   getifaddrs(&if_struct);
 
-  for (if_address = if_struct; if_address != NULL; 
+  for (if_address = if_struct; if_address != NULL;
        if_address = if_address->ifa_next) {
     struct sockaddr_in* address = (struct sockaddr_in*) if_address->ifa_addr;
-//    struct sockaddr_in* netmask = (struct sockaddr_in*) if_address->ifa_netmask;
-//    struct sockaddr_in* broad = (struct sockaddr_in*) if_address->ifa_ifu.ifu_broadaddr;
-//    struct sockaddr_in* dst = (struct sockaddr_in*) if_address->ifa_ifu.ifu_dstaddr;
+//    struct sockaddr_in* netmask =
+//      (struct sockaddr_in*) if_address->ifa_netmask;
+//    struct sockaddr_in* broad =
+//      (struct sockaddr_in*) if_address->ifa_ifu.ifu_broadaddr;
+//    struct sockaddr_in* dst =
+//      (struct sockaddr_in*) if_address->ifa_ifu.ifu_dstaddr;
 
 //    std::cout << if_address->ifa_name << std::endl;
 //    if (address != NULL) {
-//      std::cout << " ADDR(" << address->sin_addr.s_addr << ":" << 
+//      std::cout << " ADDR(" << address->sin_addr.s_addr << ":" <<
 //        address->sin_port << ")" << std::endl;
 //    }
 //    if (netmask != NULL) {
-//      std::cout << " NETM(" << netmask->sin_addr.s_addr << ":" << 
+//      std::cout << " NETM(" << netmask->sin_addr.s_addr << ":" <<
 //        netmask->sin_port << ")" << std::endl;
 //    }
 //    if (broad != NULL) {
-//      std::cout << " BROAD(" << broad->sin_addr.s_addr << ":" << 
+//      std::cout << " BROAD(" << broad->sin_addr.s_addr << ":" <<
 //        broad->sin_port << ")" << std::endl;
 //    }
 //    if (dst != NULL) {
-//      std::cout << " DST(" << dst->sin_addr.s_addr << ":" << 
+//      std::cout << " DST(" << dst->sin_addr.s_addr << ":" <<
 //        dst->sin_port << ")" << std::endl;
 //    }
 
@@ -113,4 +117,4 @@ static inline int GetCurrentIPAddress() {
   return -1;
 }
 
-#endif  // _P2PMIP_COMMON_TYPES_H_
+#endif  // _PERMANENTIP_COMMON_TYPES_H_

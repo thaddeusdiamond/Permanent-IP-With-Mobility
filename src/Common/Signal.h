@@ -2,8 +2,8 @@
 //
 // This is a standard header file for static functions handling SIGINTs
 
-#ifndef _P2PMIP_COMMON_SIGNAL_H_
-#define _P2PMIP_COMMON_SIGNAL_H_
+#ifndef _PERMANENTIP_COMMON_SIGNAL_H_
+#define _PERMANENTIP_COMMON_SIGNAL_H_
 
 #include <signal.h>
 
@@ -24,4 +24,4 @@ namespace Signal {
   }
 }
 
-#endif  // _P2PMIP_COMMON_SIGNAL_H_
+#endif  // _PERMANENTIP_COMMON_SIGNAL_H_

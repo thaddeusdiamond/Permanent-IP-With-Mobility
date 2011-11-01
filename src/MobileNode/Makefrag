@@ -1,8 +1,7 @@
 OBJDIRS += MobileNode
 
 # relative to $(TOP), i.e. MobileNode/*.cc
-MOBILENODE_SRCS :=
-#MobileNode/MulticastMobileNode.cc
+MOBILENODE_SRCS := MobileNode/SimpleMobileNode.cc
 
 # Build files only if they exist.
 MOBILENODE_SRCS := $(wildcard $(MOBILENODE_SRCS))
@@ -26,12 +25,12 @@ $(OBJDIR)/MobileNode/%.o: MobileNode/%.cc
 	@mkdir -p $(@D)
 	$(V)$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-$(OBJDIR)/MobileNode/%Test: $(OBJDIR)/MobileNode/%Test.o $(MOBILENODE_OBJS)
+$(OBJDIR)/MobileNode/%Test: $(OBJDIR)/MobileNode/%Test.o $(MobileNode_OBJS)
 	@echo + ld $@
 	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
 
-test-MobileNode: $(MOBILENODE_TESTS)
-	@for a in $(MOBILENODE_TESTS); do \
+test-MobileNode: $(MobileNode_TESTS)
+	@for a in $(MobileNode_TESTS); do \
 		echo == $$a ==; \
 		$$a; \
 	done

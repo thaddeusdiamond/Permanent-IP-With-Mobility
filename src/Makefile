@@ -9,6 +9,7 @@
 
 OBJDIR := obj
 TOP = .
+GTEST = ../ext/googletest
 
 # '$(V)' controls whether the lab makefiles print verbose commands (the
 # actual shell commands run by Make), as well as the "overview" commands
@@ -20,8 +21,8 @@ V = @
 
 CXX    := g++
 
-CXXFLAGS := -g -I$(TOP) -I$(OBJDIR) -MD -Wall -Werror
-LDFLAGS := -lpthread
+CXXFLAGS := -g -I$(TOP) -I$(OBJDIR) -I$(GTEST)/include -L$(GTEST)/lib/.libs -MD -Wall -Werror
+LDFLAGS := -lpthread -lgtest
 
 # Lists that the */Makefrag makefile fragments will add to
 OBJDIRS :=
@@ -31,6 +32,7 @@ TESTS :=
 all:
 
 # Makefile fragments for library code
+include DNS/Makefrag
 include RendezvousServer/Makefrag
 include MobileNode/Makefrag
 include Applications/Makefrag
