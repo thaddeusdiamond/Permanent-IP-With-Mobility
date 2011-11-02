@@ -11,7 +11,7 @@ class MobileNode {
 
   // We use a daemon-like "run" and "shutdown" paradigm
   virtual void Run() = 0;
-  virtual void ShutDown(bool should_exit, const char* format, ...) = 0;
+  virtual void ShutDown(const char* format, ...) = 0;
 
   // We need an interface for an application to know where to listen in on
   virtual int GetPermanentAddress() = 0;

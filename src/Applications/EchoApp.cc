@@ -8,6 +8,9 @@ void EchoApp::Run() {
   assert(CreateMobileNodeDelegate() == 0);
   if (!ConnectToPeer())
     ShutDown("Could not connect to the peer at that logical address.");
+  
+  // TODO (Thad): Use non-blocking RegisterPeer(socket, struct sockaddr)
+  // interface to connect to peer
     
   Signal::HandleSignalInterrupts();
   do {
@@ -25,13 +28,13 @@ void EchoApp::ShutDown(const char* format, ...) {
   va_list arguments;
   va_start(arguments, format);
 
-  close(listener_socket_);
+  close(app_socket_);
 
-  mobile_node_->ShutDown(false, format, arguments);
+  mobile_node_->ShutDown(format, arguments);
   delete mobile_node_;
+  Signal::ExitProgram(0);
 
   fprintf(stdout, "OK\n");
-  exit(1);
 }
 
 //int EchoApp::CreateSocket(int peer_address, int peer_port, bool listener) {
@@ -174,11 +177,12 @@ void EchoApp::ShutDown(const char* format, ...) {
 //}
 
 int EchoApp::CreateMobileNodeDelegate() {
-  pthread_t mobile_node_daemon;
+//  pthread_t mobile_node_daemon;
 //  mobile_node_ =
 //    new SimpleMobileNode(home_ip_address_, home_port_, change_port_,
 //                         data_port_, listener_port_);
 
+    int thread_status = 0;
 //  int thread_status = pthread_create(&mobile_node_daemon, NULL,
 //                                     &RunMobileAgentThread, mobile_node_);
   sleep(5);
