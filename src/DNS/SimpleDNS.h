@@ -30,11 +30,7 @@ class SimpleDNS : public DNS {
 
   // Server-like start and stop
   virtual bool Start();
-  virtual bool ShutDown(const char* format = NULL, ...);
-
-  // Declare friend tests for access to private methods
-  friend class SimpleDNSTest;
-  FRIEND_TEST(SimpleDNSTest, AddsAndLooksUp);
+  virtual bool ShutDown(const char* format, ...);
 
  protected:
   // Adding names in a simple DNS is easy, we merely update the map
@@ -63,6 +59,10 @@ class SimpleDNS : public DNS {
   Domain domain_;
   TransportLayer transport_layer_;
   Protocol protocol_;
+
+  // Declare friend tests for access to private methods
+  friend class SimpleDNSTest;
+  FRIEND_TEST(SimpleDNSTest, AddsAndLooksUp);
 };
 
 #endif  // _PERMANENTIP_DNS_SIMPLEDNS_H_

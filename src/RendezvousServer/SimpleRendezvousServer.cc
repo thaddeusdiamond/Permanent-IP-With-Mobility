@@ -5,7 +5,6 @@
 #include "RendezvousServer/SimpleRendezvousServer.h"
 
 bool SimpleRendezvousServer::Start() {
-  assert(UpdateAddress("python.cs.yale.edu", "128.36.232.46"));
   registration_listener_ = BeginListening(registration_port_);
   lookup_listener_ = BeginListening(lookup_port_);
 
@@ -20,22 +19,19 @@ bool SimpleRendezvousServer::Start() {
 }
 
 bool SimpleRendezvousServer::ShutDown(const char* format, ...) {
-  if (format != NULL) {
-    fprintf(stderr, "Shutting Down Rendezvous Server... ");
+  fprintf(stderr, "Shutting Down Rendezvous Server... ");
 
-    va_list arguments;
-    va_start(arguments, format);
+  va_list arguments;
+  va_start(arguments, format);
 
-    fprintf(stderr, format, arguments);
-    perror(" ");
-  }
+  fprintf(stderr, format, arguments);
+  perror(" ");
 
   close(registration_listener_);
   close(lookup_listener_);
   Signal::ExitProgram(0);
 
-  if (format != NULL)
-    fprintf(stderr, "OK\n");
+  fprintf(stderr, "OK\n");
 
   return false;
 }
@@ -93,11 +89,13 @@ bool SimpleRendezvousServer::HandleRequests(int listening_socket, bool lookup) {
   ShutDown("TCP is not yet supported in the RS");
 #endif
 
-  if (bytes_read > 0) {
+  int source_address = request_src.sin_addr.s_addr;
+  if (bytes_read > 0 && lookup) {
     const char* peer =
-      AddSubscriber(IntToIPName(request_src.sin_addr.s_addr), buffer).c_str();
+      ChangeSubscription(IntToIPName(source_address), buffer).c_str();
+
     fprintf(stderr, "Sending RS lookup of <%s, %s> to (%d:%d)\n", buffer,
-            peer, request_src.sin_addr.s_addr, ntohs(request_src.sin_port));
+            peer, source_address, ntohs(request_src.sin_port));
     snprintf(buffer, sizeof(buffer), "%s", peer);
 
 #ifdef UDP_APPLICATION
@@ -111,16 +109,14 @@ bool SimpleRendezvousServer::HandleRequests(int listening_socket, bool lookup) {
 
   } else if (bytes_read > 0) {
     fprintf(stderr, "Adding RS registration of <%s> from (%d:%d)\n", buffer,
-            request_src.sin_addr.s_addr, ntohs(request_src.sin_port));
-    UpdateAddress(buffer, IntToIPString(request_src.sin_addr.s_addr));
+            source_address, ntohs(request_src.sin_port));
+    UpdateAddress(buffer, IntToIPString(source_address));
   } else if (bytes_read < 0 && errno != EWOULDBLOCK && errno != EAGAIN) {
     return ShutDown("Error listening on socket");
   }
 
   return true;
 }
-
-// TODO(Thad): Add support for removal of subscription
 
 bool SimpleRendezvousServer::UpdateAddress(LogicalAddress name,
                                            PhysicalAddress address) {
@@ -130,17 +126,15 @@ bool SimpleRendezvousServer::UpdateAddress(LogicalAddress name,
   return true;
 }
 
-PhysicalAddress SimpleRendezvousServer::AddSubscriber(LogicalAddress subscriber,
-                                                      LogicalAddress client) {
+PhysicalAddress SimpleRendezvousServer::ChangeSubscription(
+    LogicalAddress subscriber,
+    LogicalAddress client) {
   if (registered_names_.count(client) > 0) {
-    active_subscriptions_[client].push_back(subscriber);
-    return registered_names_[client];
+    if (subscriptions_[client].find(subscriber) == subscriptions_[client].end())
+      subscriptions_[client].insert(subscriber);
+    else
+      subscriptions_[client].erase(subscriber);
   }
-  return "";
-}
 
-bool SimpleRendezvousServer::RemoveSubscriber(LogicalAddress subscriber,
-                                              LogicalAddress client) {
-  active_subscriptions_[client].remove(subscriber);
-  return true;
+  return (registered_names_.count(client) > 0 ? registered_names_[client] : "");
 }

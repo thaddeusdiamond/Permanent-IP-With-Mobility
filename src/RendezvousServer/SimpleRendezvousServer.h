@@ -12,14 +12,14 @@
 
 #include <cassert>
 #include <cstdarg>
-#include <list>
+#include <set>
 
 #include "Common/Utils.h"
 #include "Common/Signal.h"
 #include "RendezvousServer/RendezvousServer.h"
 
 using std::tr1::unordered_map;
-using std::list;
+using std::set;
 
 class SimpleRendezvousServer : public RendezvousServer {
  public:
@@ -34,21 +34,15 @@ class SimpleRendezvousServer : public RendezvousServer {
 
   // Server-like start and stop
   virtual bool Start();
-  virtual bool ShutDown(const char* format = NULL, ...);
-
-  // Declare friend tests for access to private methods
-//  friend class SimpleRendezvousServerTest;
-//  FRIEND_TEST(SimpleDNSTest, AddsAndLooksUp);
+  virtual bool ShutDown(const char* format, ...);
 
  protected:
   // We need to register and update addresses in the database
   virtual bool UpdateAddress(LogicalAddress name, PhysicalAddress address);
 
   // Adding/removing subscribers is key to the operation of a RS
-  virtual PhysicalAddress AddSubscriber(LogicalAddress subscriber,
-                                        LogicalAddress client) = 0;
-  virtual bool RemoveSubscriber(LogicalAddress subscriber,
-                                LogicalAddress client) = 0;
+  virtual PhysicalAddress ChangeSubscription(LogicalAddress subscriber,
+                                             LogicalAddress client);
 
   // We specifically want to respond to connections given to us on the specified
   // port.  For a simple RS, this merely involves listening in and then
@@ -61,7 +55,7 @@ class SimpleRendezvousServer : public RendezvousServer {
   // addresses that correspond to the physical address of each name, and also
   // which clients are subscribed to receive updates
   unordered_map<LogicalAddress, PhysicalAddress> registered_names_;
-  unordered_map<LogicalAddress, list<LogicalAddress> > active_subscriptions_;
+  unordered_map<LogicalAddress, set<LogicalAddress> > subscriptions_;
 
   // We maintain which port we are listening for incoming registrations on
   unsigned short registration_port_;
@@ -75,6 +69,11 @@ class SimpleRendezvousServer : public RendezvousServer {
   Domain domain_;
   TransportLayer transport_layer_;
   Protocol protocol_;
+
+  // Declare friend tests for access to private methods
+  friend class SimpleRendezvousServerTest;
+  FRIEND_TEST(SimpleRendezvousServerTest, UpdatesAndHandlesSubscribers);
+  FRIEND_TEST(SimpleRendezvousServerTest, HandlesNetworkRequests);
 };
 
 #endif  // _PERMANENTIP_RENDEZVOUSSERVER_SIMPLERENDEZVOUSSERVER_H_

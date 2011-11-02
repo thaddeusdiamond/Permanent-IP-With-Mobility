@@ -5,8 +5,10 @@
 #ifndef _PERMANENTIP_COMMON_UTILS_H_
 #define _PERMANENTIP_COMMON_UTILS_H_
 
+#include <netdb.h>
 #include <netinet/in.h>
 #include <ifaddrs.h>
+#include <string>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -32,11 +34,28 @@ static inline char* Trim(char* word) {
 }
 
 static inline LogicalAddress IntToIPName(int physical_address) {
-  return "";
+  struct sockaddr_in lookup;
+  lookup.sin_family = GLOB_DOM;
+  lookup.sin_addr.s_addr = physical_address;
+  lookup.sin_port = htons(10000);
+  socklen_t lookup_size = sizeof(lookup);
+
+  char buffer[4096];
+  getnameinfo(reinterpret_cast<struct sockaddr*>(&lookup), lookup_size,
+              buffer, sizeof(buffer), NULL, 0, 0);
+  return string(buffer);
 }
 
 static inline PhysicalAddress IntToIPString(int physical_address) {
-  return "";
+  int low_order = physical_address & 255;
+  int low_middle_order = (physical_address >> 8) & 255;
+  int high_middle_order = (physical_address >> 16) & 255;
+  int high_order = (physical_address >> 24) & 255;
+
+  char buffer[100];
+  snprintf(buffer, sizeof(buffer), "%d.%d.%d.%d", low_order, low_middle_order,
+           high_middle_order, high_order);
+  return string(buffer);
 }
 
 static inline int GetCurrentIPAddress() {

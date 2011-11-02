@@ -18,21 +18,18 @@ bool SimpleDNS::Start() {
 }
 
 bool SimpleDNS::ShutDown(const char* format, ...) {
-  if (format != NULL) {
-    fprintf(stderr, "Shutting Down DNS Server... ");
+  fprintf(stderr, "Shutting Down DNS Server... ");
 
-    va_list arguments;
-    va_start(arguments, format);
+  va_list arguments;
+  va_start(arguments, format);
 
-    fprintf(stderr, format, arguments);
-    perror(" ");
-  }
+  fprintf(stderr, format, arguments);
+  perror(" ");
 
   close(listener_);
   Signal::ExitProgram(0);
 
-  if (format != NULL)
-    fprintf(stderr, "OK\n");
+  fprintf(stderr, "OK\n");
 
   return false;
 }

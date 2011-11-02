@@ -27,10 +27,8 @@ class RendezvousServer {
   // user from that list at some point.  When the subscriber is added to the
   // list the user's last known physical address is returned for the connecting
   // user to make a connection to.
-  virtual PhysicalAddress AddSubscriber(LogicalAddress subscriber,
-                                        LogicalAddress client) = 0;
-  virtual bool RemoveSubscriber(LogicalAddress subscriber,
-                                LogicalAddress client) = 0;
+  virtual PhysicalAddress ChangeSubscription(LogicalAddress subscriber,
+                                             LogicalAddress client) = 0;
 };
 
 #endif  // _PERMANENTIP_RENDEZVOUSSERVER_RENDEZVOUSSERVER_H_

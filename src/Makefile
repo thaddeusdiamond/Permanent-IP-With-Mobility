@@ -8,6 +8,7 @@
 # Later pilfered from Alex Thomson's Deterministic DBMS project
 
 OBJDIR := obj
+LOGDIR := logs
 TOP = .
 GTEST = ../ext/googletest
 
@@ -40,7 +41,7 @@ include Applications/Makefrag
 test: $(TESTS)
 
 clean:
-	rm -rf $(OBJDIR)
+	rm -rf $(OBJDIR) $(LOGDIR)
 	
 # This magic automatically generates makefile dependencies
 # for header files included from C source files we compile,
@@ -60,6 +61,7 @@ always:
 
 # make it so that no intermediate .o files are ever deleted
 .PRECIOUS: $(foreach dir, $(OBJDIRS), $(OBJDIR)/$(dir)/%.o) \
+           $(foreach dir, $(OBJDIRS), $(OBJDIR)/$(dir)/%Test.o) \
            $(foreach dir, $(OBJDIRS), $(OBJDIR)/$(dir)/%.pb.cc) \
            $(foreach dir, $(OBJDIRS), $(OBJDIR)/$(dir)/%.pb.h)
 

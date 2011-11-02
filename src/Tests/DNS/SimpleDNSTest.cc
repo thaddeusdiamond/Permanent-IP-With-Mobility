@@ -1,6 +1,6 @@
 // Author: Thaddeus Diamond (diamond@cs.yale.edu)
 //
-// Test for a simple mobile node
+// Test for a simple DNS
 
 #include <pthread.h>
 #include <gtest/gtest.h>
@@ -50,7 +50,7 @@ namespace {
 
 // Start and stop test (basic functionality)
 TEST_F(SimpleDNSTest, StartsAndStops) {
-  ASSERT_FALSE(dns_->ShutDown());
+  ASSERT_FALSE(dns_->ShutDown("Normal termination"));
 }
 
 // Ensure adding names and lookups are correct
@@ -59,7 +59,7 @@ TEST_F(SimpleDNSTest, AddsAndLooksUp) {
   EXPECT_NE(dns_->LookupName("tick.cs.yale.edu"), "128.36.232.49");
   EXPECT_EQ(dns_->LookupName("tick.cs.yale.edu"), "128.36.232.50");
 
-  ASSERT_FALSE(dns_->ShutDown());
+  ASSERT_FALSE(dns_->ShutDown("Normal termination"));
 }
 
 // Ensure it handles network lookups
@@ -78,7 +78,7 @@ TEST_F(SimpleDNSTest, HandlesNetworkRequests) {
   setsockopt(sender, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&on),
              sizeof(on));
 
-  char buffer[4096] = "python.cs.yale.edu";
+  char buffer[19] = "python.cs.yale.edu";
 #ifdef UDP_APPLICATION
   sendto(sender, buffer, sizeof(buffer), 0,
          reinterpret_cast<struct sockaddr*>(&server),
@@ -92,9 +92,26 @@ TEST_F(SimpleDNSTest, HandlesNetworkRequests) {
   fprintf(stderr, "TCP is not yet supported\n");
   ASSERT_TRUE(false);
 #endif
-
   EXPECT_EQ(string(buffer), "128.36.232.46");
-  ASSERT_FALSE(dns_->ShutDown());
+
+  char failed_buffer[19] = "monkey.cs.yale.edu";
+#ifdef UDP_APPLICATION
+  sendto(sender, failed_buffer, sizeof(failed_buffer), 0,
+         reinterpret_cast<struct sockaddr*>(&server),
+         server_size);
+  recvfrom(sender, failed_buffer, sizeof(failed_buffer), 0,
+           reinterpret_cast<struct sockaddr*>(&server),
+           &server_size);
+#endif
+#ifdef TCP_APPLICATION
+  server_size = 0;
+  fprintf(stderr, "TCP is not yet supported\n");
+  ASSERT_TRUE(false);
+#endif
+  EXPECT_EQ(string(failed_buffer), "");
+
+  ASSERT_FALSE(close(sender));
+  ASSERT_FALSE(dns_->ShutDown("Normal termination"));
 }
 
 int main(int argc, char* argv[]) {
