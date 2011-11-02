@@ -11,6 +11,8 @@
 #include <cstring>
 #include <cstdlib>
 
+#include "Common/Types.h"
+
 static inline char* Trim(char* word) {
   if (!word || !word[0])
     return NULL;
@@ -27,6 +29,14 @@ static inline char* Trim(char* word) {
     word[end] = '\0';
 
   return word;
+}
+
+static inline LogicalAddress IntToIPName(int physical_address) {
+  return "";
+}
+
+static inline PhysicalAddress IntToIPString(int physical_address) {
+  return "";
 }
 
 static inline int GetCurrentIPAddress() {

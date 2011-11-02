@@ -25,6 +25,9 @@
 
 using std::string;
 
+#define UDP_APPLICATION
+#define GLOB_TL UDP
+
 enum TransportLayer {
   RAW = SOCK_RAW,
   TCP = SOCK_STREAM,
@@ -32,11 +35,17 @@ enum TransportLayer {
   SCTP = SOCK_SEQPACKET,
 };
 
+#define IPv4_APPLICATION
+#define GLOB_DOM NETv4
+
 enum Domain {
   PACKET = AF_PACKET,
   NETv4 = PF_INET,
   NETv6 = PF_INET6,
 };
+
+#define PROTO_NO_APPLICATION
+#define GLOB_PROTO NO_TYPE
 
 enum Protocol {
   NO_TYPE = 0,

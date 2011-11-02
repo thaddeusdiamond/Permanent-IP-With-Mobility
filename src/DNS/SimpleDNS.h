@@ -7,6 +7,8 @@
 
 #include <gtest/gtest.h>
 #include <tr1/unordered_map>
+#include <fcntl.h>
+#include <errno.h>
 
 #include <cassert>
 #include <cstdarg>
@@ -21,7 +23,7 @@ class SimpleDNS : public DNS {
  public:
   // The constructor simply needs a port to listen for lookups
   explicit SimpleDNS(unsigned short port) : port_(port),
-    domain_(NETv4), transport_layer_(UDP), protocol_(NO_TYPE) {}
+    domain_(GLOB_DOM), transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {}
 
   // Null destructor
   virtual ~SimpleDNS() {}

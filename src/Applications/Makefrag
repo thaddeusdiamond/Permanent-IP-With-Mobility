@@ -25,14 +25,14 @@ $(OBJDIR)/Applications/%.o: Applications/%.cc
 	@mkdir -p $(@D)
 	$(V)$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-$(OBJDIR)/Applications/%Test: $(OBJDIR)/Applications/%Test.o $(APPLICATIONS_OBJS) $(MOBILENODE_OBJS)
+$(OBJDIR)/Applications/%Test: $(OBJDIR)/Applications/%Test.o $(APPLICATIONS_OBJS)
 	@echo + ld $@
-	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
+	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 test-Applications: $(APPLICATIONS_TESTS)
 	@for a in $(APPLICATIONS_TESTS); do \
 		echo == $$a ==; \
-		$$a; \
+		LD_LIBRARY_PATH=$(GTEST)/lib/.libs $$a 2>>test.log; \
 	done
 
 .PHONY: Applications-all Applications Applications-tests test-Applications

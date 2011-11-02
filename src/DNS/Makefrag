@@ -32,7 +32,7 @@ $(OBJDIR)/DNS/%Test: $(OBJDIR)/DNS/%Test.o $(DNS_OBJS)
 test-DNS: $(DNS_TESTS)
 	@for a in $(DNS_TESTS); do \
 		echo == $$a ==; \
-		LD_LIBRARY_PATH=$(GTEST)/lib/.libs $$a; \
+		LD_LIBRARY_PATH=$(GTEST)/lib/.libs $$a 2>>test.log; \
 	done
 
 .PHONY: DNS-all DNS DNS-tests test-DNS

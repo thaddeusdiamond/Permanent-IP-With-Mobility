@@ -1,8 +1,7 @@
 OBJDIRS += RendezvousServer
 
 # relative to $(TOP), i.e. RendezvousServer/*.cc
-RENDEZVOUSSERVER_SRCS := 
-#RendezvousServer/MulticastRendezvousServer.cc
+RENDEZVOUSSERVER_SRCS := RendezvousServer/SimpleRendezvousServer.cc
 
 # Build files only if they exist.
 RENDEZVOUSSERVER_SRCS := $(wildcard $(RENDEZVOUSSERVER_SRCS))
@@ -28,12 +27,12 @@ $(OBJDIR)/RendezvousServer/%.o: RendezvousServer/%.cc
 
 $(OBJDIR)/RendezvousServer/%Test: $(OBJDIR)/RendezvousServer/%Test.o $(RENDEZVOUSSERVER_OBJS)
 	@echo + ld $@
-	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
+	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 test-RendezvousServer: $(RENDEZVOUSSERVER_TESTS)
 	@for a in $(RENDEZVOUSSERVER_TESTS); do \
 		echo == $$a ==; \
-		$$a; \
+		LD_LIBRARY_PATH=$(GTEST)/lib/.libs $$a 2>>test.log; \
 	done
 
 .PHONY: RendezvousServer-all RendezvousServer RendezvousServer-tests test-RendezvousServer

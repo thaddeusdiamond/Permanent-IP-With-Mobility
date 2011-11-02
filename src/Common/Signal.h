@@ -18,6 +18,10 @@ namespace Signal {
     exit_flag = true;
   }
 
+  static inline void RestartProgram() {
+    exit_flag = false;
+  }
+
   static inline void HandleSignalInterrupts() {
     signal(SIGINT, &ExitProgram);
     signal(SIGTERM, &ExitProgram);

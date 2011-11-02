@@ -27,12 +27,12 @@ $(OBJDIR)/MobileNode/%.o: MobileNode/%.cc
 
 $(OBJDIR)/MobileNode/%Test: $(OBJDIR)/MobileNode/%Test.o $(MobileNode_OBJS)
 	@echo + ld $@
-	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
+	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 test-MobileNode: $(MobileNode_TESTS)
 	@for a in $(MobileNode_TESTS); do \
 		echo == $$a ==; \
-		$$a; \
+		LD_LIBRARY_PATH=$(GTEST)/lib/.libs $$a 2>>test.log; \
 	done
 
 .PHONY: MobileNode-all MobileNode MobileNode-tests test-MobileNode
