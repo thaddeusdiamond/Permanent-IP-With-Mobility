@@ -12,16 +12,16 @@
 int main(int argc, char* argv[]) {
   if (argc < MIN_ARGUMENTS)
     Die("Must specify an application to use");
-  
+
   if (!strcmp(argv[1], "EchoApp")) {
     if (argc != ECHO_NUM_ARGUMENTS)
       Die("Usage: ./RunApp EchoApp [Msg] [Peer (Port)] [DNS (Port)] [Port]");
-    
+
     EchoApp* application =
-      new EchoApp(string(argv[2]), string(argv[3]), atoi(argv[4]), 
+      new EchoApp(string(argv[2]), string(argv[3]), atoi(argv[4]),
                   string(argv[5]), atoi(argv[6]), atoi(argv[7]));
     return application->Start();
   }
-  
+
   exit(EXIT_FAILURE);
 }
