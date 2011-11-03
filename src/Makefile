@@ -33,10 +33,10 @@ TESTS :=
 all:
 
 # Makefile fragments for library code
-include DNS/Makefrag
-include RendezvousServer/Makefrag
-include MobileNode/Makefrag
-include Applications/Makefrag
+include DNS/Makefile.inc
+include RendezvousServer/Makefile.inc
+include MobileNode/Makefile.inc
+include Applications/Makefile.inc
 
 test: $(TESTS)
 
