@@ -34,7 +34,7 @@ $(OBJDIR)/RendezvousServer/%Test.o: Tests/RendezvousServer/%Test.cc
 
 $(OBJDIR)/RendezvousServer/%Test: $(OBJDIR)/RendezvousServer/%Test.o $(RENDEZVOUSSERVER_OBJS)
 	@echo + ld $@
-	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
 
 $(RENDEZVOUSSERVER_DEPLOY): $(RENDEZVOUSSERVER) $(RENDEZVOUSSERVER_OBJS)
 	@echo + ld $@

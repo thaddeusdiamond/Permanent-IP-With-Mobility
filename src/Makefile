@@ -22,8 +22,8 @@ V = @
 
 CXX    := g++
 
-CXXFLAGS := -g -I$(TOP) -I$(OBJDIR) -I$(GTEST)/include -L$(GTEST)/lib/.libs -MD -Wall -Werror
-LDFLAGS := -lpthread -lgtest
+CXXFLAGS := -g -I$(TOP) -I$(OBJDIR) -I$(GTEST)/include -MD -Wall -Werror
+LDFLAGS := -lpthread -lgtest -L$(GTEST)/lib/.libs
 
 # Lists that the */Makefrag makefile fragments will add to
 OBJDIRS := Deployment

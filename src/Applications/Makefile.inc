@@ -34,7 +34,7 @@ $(OBJDIR)/Applications/%Test.o: Tests/Applications/%Test.cc
 
 $(OBJDIR)/Applications/%Test: $(OBJDIR)/Applications/%Test.o $(APPLICATIONS_OBJS) $(MOBILENODE_OBJS)
 	@echo + ld $@
-	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
 
 $(APPLICATIONS_DEPLOY): $(APPLICATIONS) $(APPLICATIONS_OBJS) $(MOBILENODE_OBJS)
 	@echo + ld $@

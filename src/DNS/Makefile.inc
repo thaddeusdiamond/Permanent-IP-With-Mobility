@@ -34,7 +34,7 @@ $(OBJDIR)/DNS/%Test.o: Tests/DNS/%Test.cc
 	
 $(OBJDIR)/DNS/%Test: $(OBJDIR)/DNS/%Test.o $(DNS_OBJS)
 	@echo + ld $@
-	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
 
 $(DNS_DEPLOY): $(DNS) $(DNS_OBJS)
 	@echo + ld $@

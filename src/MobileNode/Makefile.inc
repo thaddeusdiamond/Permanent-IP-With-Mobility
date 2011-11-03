@@ -34,7 +34,7 @@ $(OBJDIR)/MobileNode/%Test.o: Tests/MobileNode/%Test.cc
 
 $(OBJDIR)/MobileNode/%Test: $(OBJDIR)/MobileNode/%Test.o $(MOBILENODE_OBJS)
 	@echo + ld $@
-	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
 
 $(MOBILENODE_DEPLOY): $(MOBILE_NODE) $(MOBILENODE_OBJS)
 	@echo + ld $@
