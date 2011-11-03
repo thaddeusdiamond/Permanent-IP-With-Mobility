@@ -1,7 +1,7 @@
 // Author: Thaddeus Diamond (diamond@cs.yale.edu)
 //
 // This is an abstract interface for a simple implementation of the mobile node
-// in Mobile IP
+// agent in our rendezvous server scheme
 
 #ifndef _PERMANENTIP_MOBILENODE_SIMPLEMOBILENODE_H_
 #define _PERMANENTIP_MOBILENODE_SIMPLEMOBILENODE_H_
@@ -16,51 +16,35 @@
 //#include <cassert>
 //#include <map>
 //#include <set>
-//#include "Common/Signal.h"
-//#include "Common/Types.h"
+#include <cstdarg>
+
+#include "Common/Signal.h"
+#include "Common/Types.h"
+#include "Common/Utils.h"
 #include "MobileNode/MobileNode.h"
 
 //using std::map;
 //using std::set;
 
 class SimpleMobileNode : public MobileNode {
-// public:
-//  SimpleMobileNode(IPAddress home_ip_address, unsigned short home_port,
-//                   unsigned short change_port, unsigned short data_port,
-//                   unsigned short listener_port,
-//                   TransportLayer transmission_type = TCP,
-//                   Domain domain = NETv4, Protocol protocol = NO_TYPE) {
-//    home_port_ = home_port;
-//    change_port_ = change_port;
-//    data_port_ = data_port;
+ public:
+  explicit SimpleMobileNode(PhysicalAddress dns_server,
+                            unsigned short dns_port) :
+    dns_server_(dns_server), dns_port_(dns_port), domain_(GLOB_DOM),
+    transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {}
+  virtual ~SimpleMobileNode() {}
 
-//    transmission_type_ = transmission_type;
-//    domain_ = domain;
-//    protocol_ = protocol;
-//    listener_port_ = listener_port;
+  // We use a daemon-like "run" paradigm
+  virtual void Start();
 
-//    home_ip_address_ = home_ip_address;
-//    last_known_ip_address_ = GetCurrentIPAddress();
+  // We also need a "shutdown" mechanism that we can access with a SIGINT
+  virtual bool ShutDown(const char* format, ...);
 
-//    tunnel_name_ = new char[IFNAMSIZ + 1];
-//    memset(tunnel_name_, 0, IFNAMSIZ + 1);
-//  }
-//  virtual ~SimpleMobileNode() {
-//    delete tunnel_name_;
-//  }
-
-//  // We use a daemon-like "run" paradigm
-//  virtual void Run();
-
-//  // We also need a "shutdown" mechanism that we can access with a SIGINT
-//  virtual void ShutDown(bool should_exit, const char* format, ...);
-
-//  // Allow applications to know where to listen
-//  virtual int GetPermanentAddress() { return permanent_address_; }
-
-//  // Any application needs to register an open socket so that it can be
-//  // intercepted
-//  virtual bool RegisterPeer(int peer_address);
+  // Any application needs to register an open socket so that it can be
+  // intercepted
+  virtual struct sockaddr* RegisterPeer(int app_socket,
+                                        LogicalAddress peer_addr,
+                                        unsigned short peer_port);
 
 // protected:
 //  // A mobile agent needs to instantiate a connection to the home agent
@@ -78,12 +62,10 @@ class SimpleMobileNode : public MobileNode {
 //  // A Mobile node should create tunnels, but it's not strictly a requirement
 //  int CreateTunnel(char* tunnel_name, int tunnel_address);
 
-//  // Listed connection to home IP address
-//  IPAddress home_ip_address_;
-//  unsigned short home_port_;
-//  unsigned short change_port_;
-//  unsigned short data_port_;
-//  
+  // Listed connection to home DNS server
+  PhysicalAddress dns_server_;
+  unsigned short dns_port_;
+
 //  // We maintain what mailbox the home agent is keeping open for us
 //  unsigned int permanent_address_;
 //  unsigned short permanent_port_;
@@ -96,10 +78,10 @@ class SimpleMobileNode : public MobileNode {
 //  // no longer our IP
 //  int last_known_ip_address_;
 
-//  // We must specify what type of transport layer protocol we are using
-//  TransportLayer transmission_type_;
-//  Domain domain_;
-//  Protocol protocol_;
+  // We must specify what type of transport layer protocol we are using
+  Domain domain_;
+  TransportLayer transport_layer_;
+  Protocol protocol_;
 
 //  // We keep track of the virtual tunnel applications are using
 //  char* tunnel_name_;

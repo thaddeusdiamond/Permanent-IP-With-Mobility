@@ -15,6 +15,16 @@
 
 #include "Common/Types.h"
 
+static inline void Die(const char* format, ...) {
+  va_list arguments;
+  va_start(arguments, format);
+
+  fprintf(stderr, format, arguments);
+  fprintf(stderr, "\n");
+
+  exit(1);
+}
+
 static inline char* Trim(char* word) {
   if (!word || !word[0])
     return NULL;

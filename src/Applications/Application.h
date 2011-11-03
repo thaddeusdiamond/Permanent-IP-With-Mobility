@@ -11,8 +11,8 @@ class Application {
   virtual ~Application() {}
 
   // Application-like "run" and "shutdown" paradigm
-  virtual void Run() = 0;
-  virtual void ShutDown(const char* format, ...) = 0;
+  virtual bool Start() = 0;
+  virtual bool ShutDown(const char* format, ...) = 0;
 
  protected:
   // Create a mobile node to monitor our location/update rendezvous server

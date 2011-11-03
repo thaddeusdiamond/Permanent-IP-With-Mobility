@@ -8,7 +8,8 @@
 
 // Non-member function required by PThread
 static inline void* RunRendezvousServerThread(void* rendezvous_server) {
-  (reinterpret_cast<SimpleRendezvousServer*>(rendezvous_server))->Start();
+  EXPECT_TRUE((reinterpret_cast<SimpleRendezvousServer*>(
+               rendezvous_server))->Start());
   return NULL;
 }
 
@@ -75,7 +76,7 @@ TEST_F(SimpleRendezvousServerTest, UpdatesAndHandlesSubscribers) {
   EXPECT_EQ(rendezvous_server_->subscriptions_[
               "tick.cs.yale.edu"].find("thad.cs.yale.edu"),
             rendezvous_server_->subscriptions_["tick.cs.yale.edu"].end());
-            
+
   ASSERT_FALSE(rendezvous_server_->ShutDown("Normal termination"));
 }
 

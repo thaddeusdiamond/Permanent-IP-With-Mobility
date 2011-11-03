@@ -6,9 +6,13 @@
 #ifndef _PERMANENTIP_APPLICATIONS_ECHOAPP_H_
 #define _PERMANENTIP_APPLICATIONS_ECHOAPP_H_
 
+#include <fcntl.h>
 #include <pthread.h>
+#include <errno.h>
+
 #include <cassert>
 #include <cstdarg>
+#include <string>
 
 #include "Common/Signal.h"
 #include "Common/Types.h"
@@ -18,20 +22,20 @@
 
 class EchoApp : public Application {
  public:
-  EchoApp(string keyword,
-          LogicalAddress peer_address, unsigned short peer_port,
-          PhysicalAddress dns_server, unsigned short dns_port, 
-          unsigned short app_port) :
-      keyword_(keyword), peer_address_(peer_address), peer_port_(peer_port),
+  explicit EchoApp(string keyword,
+                   LogicalAddress peer_addr, unsigned short peer_port,
+                   PhysicalAddress dns_server, unsigned short dns_port,
+                   unsigned short app_port) :
+      keyword_(keyword), peer_addr_(peer_addr), peer_port_(peer_port),
       app_port_(app_port), dns_server_(dns_server), dns_port_(dns_port),
       domain_(GLOB_DOM), transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {}
-  virtual ~EchoApp() {}
+  virtual ~EchoApp() {
+    delete mobile_node_;
+  }
 
-  // Application-like "run" paradigm
-  virtual void Run();
-
-  // Need to have a "shutdown" method that can be called with a SIGINT handler
-  virtual void ShutDown(const char* format, ...);
+  // Application-like "run" and "shutdown" paradigm
+  virtual bool Start();
+  virtual bool ShutDown(const char* format, ...);
 
  protected:
   // This is the method that creates an instance of our mobile node delegate on
@@ -45,17 +49,11 @@ class EchoApp : public Application {
   // variables.
   bool ConnectToPeer();
 
-//  // We delegate a special create socket method for this type of app.  Although
-//  // generally desirable, it is not strictly required for an application and
-//  // is therefore left not virtual.
-//  int CreateSocket(int peer_address = 0, int peer_port = 0,
-//                   bool listener = false);
-
   // Whenever someone sends us data we want to have an abstracted manner of
   // handling that so we don't clog up the application pool.  We do this for
   // sending out data as well.
-  void PrintReceivedData();
-  void EchoMessage(string message, int peer_address = 0, int peer_port = 0);
+  bool PrintReceivedData();
+  bool EchoMessage(string message, struct sockaddr* peer_info = NULL);
 
   // We keep track of the keyword we are going to send out to the server so that
   // we don't de-dup our traffic.  We make the assumption no two echo
@@ -65,8 +63,9 @@ class EchoApp : public Application {
   // We also want to keep track of what host and port number we are
   // communicating with.  We instantiate the socket normally, but later register
   // it with the mobile node agent, which manipulates it's behavior.
-  LogicalAddress peer_address_;
+  LogicalAddress peer_addr_;
   unsigned short peer_port_;
+  struct sockaddr* peer_info_;
 
   // We need to listen in on a port for traffic from our peers.
   int app_socket_;
@@ -90,7 +89,7 @@ class EchoApp : public Application {
 };
 
 static inline void* RunMobileAgentThread(void* agent) {
-  (reinterpret_cast<MobileNode*>(agent))->Run();
+  (reinterpret_cast<MobileNode*>(agent))->Start();
   return NULL;
 }
 

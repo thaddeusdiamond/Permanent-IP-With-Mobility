@@ -8,7 +8,7 @@
 
 // Non-member function required by PThread
 static inline void* RunDNSThread(void* dns) {
-  (reinterpret_cast<SimpleDNS*>(dns))->Start();
+  EXPECT_TRUE((reinterpret_cast<SimpleDNS*>(dns))->Start());
   return NULL;
 }
 

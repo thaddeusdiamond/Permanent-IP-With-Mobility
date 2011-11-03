@@ -32,7 +32,6 @@ bool SimpleRendezvousServer::ShutDown(const char* format, ...) {
   Signal::ExitProgram(0);
 
   fprintf(stderr, "OK\n");
-
   return false;
 }
 

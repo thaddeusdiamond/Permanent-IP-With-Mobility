@@ -1,26 +1,60 @@
-//// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-////
-//// This is a test for our simple echo application
+// Author: Thaddeus Diamond (diamond@cs.yale.edu)
+//
+// This is a test for our simple echo application
 
-int main() {}
+#include <pthread.h>
+#include <gtest/gtest.h>
+#include "Applications/EchoApp.h"
 
-//#include "Common/Testing.h"
-//#include "Applications/EchoApp.h"
+// Non-member function required by PThread
+static inline void* RunEchoAppThread(void* echo_app) {
+  EXPECT_TRUE((reinterpret_cast<EchoApp*>(echo_app))->Start());
+  return NULL;
+}
 
-//TEST(EchoAppTest, char* keyword, int listener,
-//                  IPAddress home_ip, int home_port, int change_port,
-//                  int data_port, IPAddress peer_ip, int peer_port) {
-//  EchoApp* application = new EchoApp(keyword, home_ip, home_port, change_port,
-//                                     data_port, peer_ip, peer_port, listener);
-//  application->Run();
+// Dummy tester class
+namespace {
+  class EchoAppTest : public ::testing::Test {
+   protected:
+    // Create a DNS server before each test (Python is DNS lookup here)
+    EchoAppTest() :
+        domain_(GLOB_DOM), transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {
+      echo_app_ = new EchoApp("Disco, dude!", "dolphin.cs.yale.edu", 16000,
+                              "128.36.232.46", 16000, 16000);
 
-//  END;
-//}
+      pthread_create(&echo_app_daemon_, NULL, &RunEchoAppThread, echo_app_);
+      sleep(1);
+    }
 
-//int main(int argc, char* argv[]) {
-//  if (argc < 5)
-//    Die(NULL, "Usage: ./EchoAppTest KEYWORD LISTENER_PORT HOME_IP PORT CHANGE_PORT DATA_PORT PEER_IP PORT");
+    // Destroy DNS memory
+    virtual ~EchoAppTest() {
+      pthread_join(echo_app_daemon_, NULL);
+      delete echo_app_;
+    }
 
-//  EchoAppTest(argv[1], atoi(argv[2]), argv[3], atoi(argv[4]), atoi(argv[5]),
-//                       atoi(argv[6]), argv[7], atoi(argv[8]));
-//}
+    // Unused virtual methods
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+
+    // Create a member variable for the thread
+    pthread_t echo_app_daemon_;
+
+    // Create a member variable for the echo_app
+    EchoApp* echo_app_;
+
+    // Create member variables for connectivity
+    Domain domain_;
+    TransportLayer transport_layer_;
+    Protocol protocol_;
+  };
+}
+
+// Start and stop test (basic functionality)
+TEST_F(EchoAppTest, StartsAndStops) {
+  ASSERT_FALSE(echo_app_->ShutDown("Normal termination"));
+}
+
+int main(int argc, char* argv[]) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

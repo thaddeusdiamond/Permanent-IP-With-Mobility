@@ -2,10 +2,12 @@ OBJDIRS += RendezvousServer
 
 # relative to $(TOP), i.e. RendezvousServer/*.cc
 RENDEZVOUSSERVER_SRCS := RendezvousServer/SimpleRendezvousServer.cc
+RENDEZVOUSSERVER :=
 
 # Build files only if they exist.
 RENDEZVOUSSERVER_SRCS := $(wildcard $(RENDEZVOUSSERVER_SRCS))
 RENDEZVOUSSERVER_OBJS := $(patsubst %.cc, $(OBJDIR)/%.o, $(RENDEZVOUSSERVER_SRCS))
+RENDEZVOUSSERVER_DEPLOY := $(patsubst %.cc, $(OBJDIR)/%, $(RENDEZVOUSSERVER))
 
 RENDEZVOUSSERVER_TEST_SRCS := $(wildcard Tests/RendezvousServer/*Test.cc)
 RENDEZVOUSSERVER_TEST_OBJS := $(patsubst %.cc, $(OBJDIR)/%Test.o, $(RENDEZVOUSSERVER_SRCS))
@@ -16,7 +18,7 @@ TESTS += test-RendezvousServer
 all: RendezvousServer-all
 
 RendezvousServer-all: RendezvousServer RendezvousServer-tests
-RendezvousServer: $(RENDEZVOUSSERVER_OBJS)
+RendezvousServer: $(RENDEZVOUSSERVER_OBJS) $(RENDEZVOUSSERVER_DEPLOY)
 RendezvousServer-tests: $(RENDEZVOUSSERVER_TESTS)
 
 $(OBJDIR)/RendezvousServer/%.o: RendezvousServer/%.cc
@@ -30,9 +32,13 @@ $(OBJDIR)/RendezvousServer/%Test.o: Tests/RendezvousServer/%Test.cc
 	@mkdir -p $(patsubst $(OBJDIR)%, $(LOGDIR)%, $(@D))
 	$(V)$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-
 $(OBJDIR)/RendezvousServer/%Test: $(OBJDIR)/RendezvousServer/%Test.o $(RENDEZVOUSSERVER_OBJS)
 	@echo + ld $@
+	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+
+$(RENDEZVOUSSERVER_DEPLOY): $(RENDEZVOUSSERVER) $(RENDEZVOUSSERVER_OBJS)
+	@echo + ld $@
+	@mkdir -p $(@D)
 	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 test-RendezvousServer: $(RENDEZVOUSSERVER_TESTS)

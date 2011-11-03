@@ -7,8 +7,8 @@
 #
 # Later pilfered from Alex Thomson's Deterministic DBMS project
 
-OBJDIR := obj
-LOGDIR := logs
+OBJDIR := ../build
+LOGDIR := ../logs
 TOP = .
 GTEST = ../ext/googletest
 
@@ -26,7 +26,7 @@ CXXFLAGS := -g -I$(TOP) -I$(OBJDIR) -I$(GTEST)/include -L$(GTEST)/lib/.libs -MD 
 LDFLAGS := -lpthread -lgtest
 
 # Lists that the */Makefrag makefile fragments will add to
-OBJDIRS :=
+OBJDIRS := Deployment
 TESTS :=
 
 # Make sure that 'all' is the first target
