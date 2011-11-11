@@ -6,88 +6,69 @@
 #ifndef _PERMANENTIP_MOBILENODE_SIMPLEMOBILENODE_H_
 #define _PERMANENTIP_MOBILENODE_SIMPLEMOBILENODE_H_
 
-//#include <fcntl.h>
-//#include <net/if.h>
-//#include <linux/if_tun.h>
-//#include <sys/ioctl.h>
-//#include <netdb.h>
-//#include <unistd.h>
-//#include <cerrno>
-//#include <cassert>
-//#include <map>
-//#include <set>
+#include <netdb.h>
+#include <fcntl.h>
+#include <tr1/unordered_map>
+#include <cerrno>
+#include <cassert>
 #include <cstdarg>
+#include <string>
 
 #include "Common/Signal.h"
 #include "Common/Types.h"
 #include "Common/Utils.h"
 #include "MobileNode/MobileNode.h"
 
-//using std::map;
-//using std::set;
+using std::tr1::unordered_map;
+using std::string;
 
 class SimpleMobileNode : public MobileNode {
  public:
-  explicit SimpleMobileNode(PhysicalAddress dns_server,
-                            unsigned short dns_port) :
-    dns_server_(dns_server), dns_port_(dns_port), domain_(GLOB_DOM),
-    transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {}
+  SimpleMobileNode(LogicalAddress logical_address, PhysicalAddress dns_server,
+                   PhysicalAddress rendezvous_server) :
+    logical_address_(logical_address),
+    last_known_ip_address_(GetCurrentIPAddress()), dns_server_(dns_server),
+    rendezvous_server_(rendezvous_server), rendezvous_port_(GLOB_REGIST_PORT),
+    domain_(GLOB_DOM), transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {}
   virtual ~SimpleMobileNode() {}
 
-  // We use a daemon-like "run" paradigm
-  virtual void Start();
-
-  // We also need a "shutdown" mechanism that we can access with a SIGINT
+  // We use a daemon-like "run" and "shutdown" paradigm
+  virtual bool Start();
   virtual bool ShutDown(const char* format, ...);
 
   // Any application needs to register an open socket so that it can be
   // intercepted
   virtual struct sockaddr* RegisterPeer(int app_socket,
-                                        LogicalAddress peer_addr,
-                                        unsigned short peer_port);
+                                        LogicalAddress peer_addr);
 
-// protected:
-//  // A mobile agent needs to instantiate a connection to the home agent
-//  virtual void ConnectToHome(unsigned short port, char* data = NULL,
-//                             bool initial = false);
+ protected:
+  // A mobile agent needs to connect to arbitrary servers to gain information
+  NetworkMsg ConnectToServer(PhysicalAddress server_addr,
+                             unsigned short server_port,
+                             NetworkMsg information, int sender = -1);
 
-//  // The primary thing a mobile node does is intercept outgoing traffic on
-//  // the virtual tunnels and forwards along all of the data to the home agent's
-//  // data port.
-//  virtual void CollectOutgoingTraffic();
+  // A mobile node needs to update the home agent when it's IP changes and
+  // poll existing subscriptions
+  virtual void UpdateRendezvousServer();
+  virtual void PollSubscriptions();
 
-//  // A mobile node needs to update the home agent when it's IP changes
-//  virtual void ChangeHomeIdentity();
+  // We keep the last known identity and change the interface if that's
+  // no longer our IP
+  LogicalAddress logical_address_;
+  int last_known_ip_address_;
 
-//  // A Mobile node should create tunnels, but it's not strictly a requirement
-//  int CreateTunnel(char* tunnel_name, int tunnel_address);
-
-  // Listed connection to home DNS server
+  // Listed connection to home RS and global DNS server
   PhysicalAddress dns_server_;
-  unsigned short dns_port_;
-
-//  // We maintain what mailbox the home agent is keeping open for us
-//  unsigned int permanent_address_;
-//  unsigned short permanent_port_;
-
-//  // The mobile node needs to know what port to accept incoming traffic on
-//  // when the home agent receives something and forwards it to us.
-//  unsigned short listener_port_;
-
-//  // We keep the last known identity and change the interface if that's
-//  // no longer our IP
-//  int last_known_ip_address_;
+  PhysicalAddress rendezvous_server_;
+  unsigned short rendezvous_port_;
 
   // We must specify what type of transport layer protocol we are using
   Domain domain_;
   TransportLayer transport_layer_;
   Protocol protocol_;
 
-//  // We keep track of the virtual tunnel applications are using
-//  char* tunnel_name_;
-//  int tunnel_fd_;
-//  int permanent_address;
-//  set<int> peer_fds_;
+  // We keep track of the applications with open sockets
+  unordered_map<int, struct sockaddr*> app_sockets_;
 };
 
 #endif  // _PERMANENTIP_MOBILENODE_SIMPLEMOBILENODE_H_

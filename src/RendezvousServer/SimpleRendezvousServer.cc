@@ -19,13 +19,12 @@ bool SimpleRendezvousServer::Start() {
 }
 
 bool SimpleRendezvousServer::ShutDown(const char* format, ...) {
-  fprintf(stderr, "Shutting Down Rendezvous Server... ");
+  fprintf(stderr, "Shutting Down Rendezvous Server (");
 
   va_list arguments;
   va_start(arguments, format);
-
   fprintf(stderr, format, arguments);
-  perror(" ");
+  perror(")");
 
   close(registration_listener_);
   close(lookup_listener_);
@@ -82,36 +81,46 @@ bool SimpleRendezvousServer::HandleRequests(int listening_socket, bool lookup) {
   int bytes_read = recvfrom(listening_socket, buffer, sizeof(buffer), 0,
                             reinterpret_cast<struct sockaddr*>(&request_src),
                             &request_src_size);
-#endif
-#ifdef TCP_APPLICATION
+#elif TCP_APPLICATION
   int bytes_read = -1;
   ShutDown("TCP is not yet supported in the RS");
 #endif
 
   int source_address = request_src.sin_addr.s_addr;
+
+  // Handle address lookup
   if (bytes_read > 0 && lookup) {
-    const char* peer =
-      ChangeSubscription(IntToIPName(source_address), buffer).c_str();
+    const char* peer = ChangeSubscription(
+      pair<LogicalAddress, unsigned short>(IntToIPName(source_address),
+                                           request_src.sin_port),
+      buffer).c_str();
 
     fprintf(stderr, "Sending RS lookup of <%s, %s> to (%d:%d)\n", buffer,
             peer, source_address, ntohs(request_src.sin_port));
     snprintf(buffer, sizeof(buffer), "%s", peer);
 
-#ifdef UDP_APPLICATION
-    sendto(listening_socket, buffer, sizeof(buffer), 0,
-           reinterpret_cast<struct sockaddr*>(&request_src),
-           request_src_size);
-#endif
-#ifdef TCP_APPLICATION
-    request_src_size = -1;
-#endif
-
+  // Handle address updating
   } else if (bytes_read > 0) {
-    fprintf(stderr, "Adding RS registration of <%s> from (%d:%d)\n", buffer,
+    fprintf(stderr, "Updating RS registration of <%s> from (%d:%d)\n", buffer,
             source_address, ntohs(request_src.sin_port));
     UpdateAddress(buffer, IntToIPString(source_address));
+
+    char switcher[4096];
+    strncpy(switcher, buffer, sizeof(buffer));
+    snprintf(buffer, sizeof(buffer), "%s %d", switcher, source_address);
+
+  // Error on the socket
   } else if (bytes_read < 0 && errno != EWOULDBLOCK && errno != EAGAIN) {
     return ShutDown("Error listening on socket");
+  }
+
+  if (bytes_read > 0) {
+#ifdef UDP_APPLICATION
+    sendto(listening_socket, buffer, sizeof(buffer), 0,
+           reinterpret_cast<struct sockaddr*>(&request_src), request_src_size);
+#elif TCP_APPLICATION
+    request_src_size = -1;
+#endif
   }
 
   return true;
@@ -121,12 +130,36 @@ bool SimpleRendezvousServer::UpdateAddress(LogicalAddress name,
                                            PhysicalAddress address) {
   registered_names_[name] = address;
 
-  // TODO(Thad): Send out updates to all subscribers
+  int update_socket = socket(domain_, transport_layer_, protocol_);
+  set< pair<LogicalAddress, unsigned short> >::iterator i;
+
+  for (i = subscriptions_[name].begin(); i != subscriptions_[name].end(); i++) {
+    // TODO(Thad): Improve this, we just use a gethostbyname lookup for now
+    struct hostent* subscriber_host = gethostbyname(i->first.c_str());
+
+    struct sockaddr_in subscriber;
+    subscriber.sin_family = domain_;
+    subscriber.sin_addr.s_addr =
+      reinterpret_cast<struct in_addr*>(subscriber_host->h_addr)->s_addr;
+    subscriber.sin_port = i->second;
+    socklen_t subscriber_size = sizeof(subscriber);
+
+    // Send out the actual update
+    fprintf(stderr, "Sending update of %s<%s> to %s\n", name.c_str(),
+            address.c_str(), i->first.c_str());
+#ifdef UDP_APPLICATION
+    sendto(update_socket, address.c_str(), address.length() + 1, 0,
+           reinterpret_cast<struct sockaddr*>(&subscriber), subscriber_size);
+#elif TCP_APPLICATION
+    return false;
+#endif
+  }
+
   return true;
 }
 
 PhysicalAddress SimpleRendezvousServer::ChangeSubscription(
-    LogicalAddress subscriber,
+    pair<LogicalAddress, unsigned short> subscriber,
     LogicalAddress client) {
   if (registered_names_.count(client) > 0) {
     if (subscriptions_[client].find(subscriber) == subscriptions_[client].end())

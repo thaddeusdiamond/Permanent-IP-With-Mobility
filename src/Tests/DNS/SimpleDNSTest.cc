@@ -19,7 +19,7 @@ namespace {
     // Create a DNS server before each test
     SimpleDNSTest() :
         domain_(GLOB_DOM), transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {
-      dns_ = new SimpleDNS(16000);
+      dns_ = new SimpleDNS();
 
       pthread_create(&dns_daemon_, NULL, &RunDNSThread, dns_);
       sleep(1);
@@ -69,8 +69,8 @@ TEST_F(SimpleDNSTest, HandlesNetworkRequests) {
   struct sockaddr_in server;
   memset(&server, 0, sizeof(server));
   server.sin_family = domain_;
-  server.sin_addr.s_addr = 16777343;
-  server.sin_port = htons(16000);
+  server.sin_addr.s_addr = GetCurrentIPAddress();
+  server.sin_port = htons(GLOB_LOOKUP_PORT);
   socklen_t server_size = sizeof(server);
 
 
@@ -86,13 +86,12 @@ TEST_F(SimpleDNSTest, HandlesNetworkRequests) {
   recvfrom(sender, buffer, sizeof(buffer), 0,
            reinterpret_cast<struct sockaddr*>(&server),
            &server_size);
-#endif
-#ifdef TCP_APPLICATION
+#elif TCP_APPLICATION
   server_size = 0;
   fprintf(stderr, "TCP is not yet supported\n");
   ASSERT_TRUE(false);
 #endif
-  EXPECT_EQ(string(buffer), "128.36.232.46");
+  EXPECT_EQ(string(buffer), "128.36.232.37");
 
   char failed_buffer[19] = "monkey.cs.yale.edu";
 #ifdef UDP_APPLICATION
@@ -102,8 +101,7 @@ TEST_F(SimpleDNSTest, HandlesNetworkRequests) {
   recvfrom(sender, failed_buffer, sizeof(failed_buffer), 0,
            reinterpret_cast<struct sockaddr*>(&server),
            &server_size);
-#endif
-#ifdef TCP_APPLICATION
+#elif TCP_APPLICATION
   server_size = 0;
   fprintf(stderr, "TCP is not yet supported\n");
   ASSERT_TRUE(false);

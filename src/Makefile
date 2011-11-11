@@ -7,10 +7,11 @@
 #
 # Later pilfered from Alex Thomson's Deterministic DBMS project
 
-OBJDIR := ../build
+OBJDIR := ../obj
+BINDIR := ../bin
 LOGDIR := ../logs
-TOP = .
-GTEST = ../ext/googletest
+GTEST  := ../ext/googletest
+TOP    := .
 
 # '$(V)' controls whether the lab makefiles print verbose commands (the
 # actual shell commands run by Make), as well as the "overview" commands
@@ -20,10 +21,12 @@ GTEST = ../ext/googletest
 # For overview and verbose commands, the line should read 'V ='.
 V = @
 
-CXX    := g++
-
-CXXFLAGS := -g -I$(TOP) -I$(OBJDIR) -I$(GTEST)/include -MD -Wall -Werror
-LDFLAGS := -lpthread -lgtest -L$(GTEST)/lib/.libs
+# Set std compiler options (linking for google test and pthread), LD_LIB
+CXX       := g++
+CXXFLAGS  := -g -I$(TOP) -I$(OBJDIR) -I$(GTEST)/include -Wall -Werror
+MDFLAGS   := -MD
+LDFLAGS   := -lpthread -lgtest -L$(GTEST)/lib/.libs
+LDLIBPATH := LD_LIBRARY_PATH=$(GTEST)/lib/.libs
 
 # Lists that the */Makefrag makefile fragments will add to
 OBJDIRS := Deployment
@@ -31,6 +34,10 @@ TESTS :=
 
 # Make sure that 'all' is the first target
 all:
+
+# We define a common "Makefrag"-style template so that we can just set dir
+# specific variables and include that template
+MAKEFILE_TEMPLATE := Makefile.template
 
 # Makefile fragments for library code
 include DNS/Makefile.inc
@@ -41,7 +48,7 @@ include Applications/Makefile.inc
 test: $(TESTS)
 
 clean:
-	rm -rf $(OBJDIR) $(LOGDIR)
+	rm -rf $(OBJDIR) $(LOGDIR) $(BINDIR)
 	
 # This magic automatically generates makefile dependencies
 # for header files included from C source files we compile,

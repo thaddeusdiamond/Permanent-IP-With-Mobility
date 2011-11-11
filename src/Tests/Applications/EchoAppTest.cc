@@ -6,6 +6,9 @@
 #include <gtest/gtest.h>
 #include "Applications/EchoApp.h"
 
+// TODO(Thad): These tests will hang because they do not override typical
+// integrated functions into dummy black boxes.
+
 // Non-member function required by PThread
 static inline void* RunEchoAppThread(void* echo_app) {
   EXPECT_TRUE((reinterpret_cast<EchoApp*>(echo_app))->Start());
@@ -19,8 +22,11 @@ namespace {
     // Create a DNS server before each test (Python is DNS lookup here)
     EchoAppTest() :
         domain_(GLOB_DOM), transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {
-      echo_app_ = new EchoApp("Disco, dude!", "dolphin.cs.yale.edu", 16000,
-                              "128.36.232.46", 16000, 16000);
+      // Run on tick (LA), with peer@dolphin DNS@python and RS@termite
+      echo_app_ =
+        new EchoApp("Disco, dude!", "tick.cs.yale.edu", 16000,
+                    "dolphin.cs.yale.edu", 16000, "128.36.232.46",
+                    "128.36.232.28");
 
       pthread_create(&echo_app_daemon_, NULL, &RunEchoAppThread, echo_app_);
       sleep(1);

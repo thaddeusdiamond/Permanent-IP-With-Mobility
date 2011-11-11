@@ -15,11 +15,17 @@
 
 #define LogicalAddress string
 #define PhysicalAddress string
+#define NetworkMsg string
+
+#define LOCALHOST 16777343
+#define GLOB_LOOKUP_PORT 16000
+#define GLOB_REGIST_PORT 16001
 
 #define IP_NAME_LENGTH 20
 #define IP_PORT_LENGTH 10
 #define IPv6_ADDR_LENGTH 16
 
+#define MAX_ATTEMPTS 10
 #define MAX_CONNECTIONS 64
 #define FULL_SUBNET 16777215
 

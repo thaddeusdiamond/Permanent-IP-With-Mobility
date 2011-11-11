@@ -1,50 +1,23 @@
+# Modify global directives in global namespace
 OBJDIRS += Applications
+TESTS += ApplicationsTest
 
-# relative to $(TOP), i.e. Applications/*.cc
-APPLICATIONS_SRCS := Applications/EchoApp.cc
+# relative to $(TOP), i.e. $(LOWERC_DIR)/*.cc
 APPLICATIONS := Deployment/RunApp.cc
+APPLICATIONS_SRCS := Applications/EchoApp.cc
 
-# Build files only if they exist.
-APPLICATIONS_SRCS := $(wildcard $(APPLICATIONS_SRCS))
-APPLICATIONS_OBJS := $(patsubst %.cc, $(OBJDIR)/%.o, $(APPLICATIONS_SRCS))
-APPLICATIONS_DEPLOY := $(patsubst %.cc, $(OBJDIR)/%, $(APPLICATIONS))
+# Set makefile template specific vars
+UPPERC_DIR = APPLICATIONS
+LOWERC_DIR = Applications
+EXECUTABLE = RunApp
+EXECUTABLE_OBJS = $(APPLICATIONS) $(MOBILENODE_OBJS)
+EXTRA_TEST_OBJS = $(MOBILENODE_OBJS)
 
-APPLICATIONS_TEST_SRCS := $(wildcard Tests/Applications/*Test.cc)
-APPLICATIONS_TEST_OBJS := $(patsubst %.cc, $(OBJDIR)/%Test.o, $(APPLICATIONS_SRCS))
-APPLICATIONS_TESTS     := $(patsubst %.cc, $(OBJDIR)/%Test, $(APPLICATIONS_SRCS))
+include $(MAKEFILE_TEMPLATE)
 
-TESTS += test-Applications
-
-all: Applications-all
-
-Applications-all: Applications Applications-tests
-Applications: $(APPLICATIONS_OBJS) $(APPLICATIONS_DEPLOY)
-Applications-tests: $(APPLICATIONS_TESTS)
-
-$(OBJDIR)/Applications/%.o: Applications/%.cc
-	@echo + cxx $<
-	@mkdir -p $(@D)
-	$(V)$(CXX) $(CXXFLAGS) -o $@ -c $<
-	
-$(OBJDIR)/Applications/%Test.o: Tests/Applications/%Test.cc
-	@echo + cxx $<
-	@mkdir -p $(@D)
-	@mkdir -p $(patsubst $(OBJDIR)%, $(LOGDIR)%, $(@D))
-	$(V)$(CXX) $(CXXFLAGS) -o $@ -c $<
-
-$(OBJDIR)/Applications/%Test: $(OBJDIR)/Applications/%Test.o $(APPLICATIONS_OBJS) $(MOBILENODE_OBJS)
-	@echo + ld $@
-	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
-
-$(APPLICATIONS_DEPLOY): $(APPLICATIONS) $(APPLICATIONS_OBJS) $(MOBILENODE_OBJS)
-	@echo + ld $@
-	@mkdir -p $(@D)
-	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
-
-test-Applications: $(APPLICATIONS_TESTS)
+# Directive to make the test case
+ApplicationsTest: $(APPLICATIONS_TESTS)
 	@for a in $(APPLICATIONS_TESTS); do \
 		echo == $$a ==; \
-		LD_LIBRARY_PATH=$(GTEST)/lib/.libs $$a 2>$(LOGDIR)$${a#$(OBJDIR)}; \
+		$(LDLIBPATH) $$a 2>$(LOGDIR)$${a#$(BINDIR)}; \
 	done
-
-.PHONY: Applications-all Applications Applications-tests test-Applications

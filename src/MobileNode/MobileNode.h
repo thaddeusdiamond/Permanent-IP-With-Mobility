@@ -10,21 +10,20 @@ class MobileNode {
   virtual ~MobileNode() {}
 
   // We use a daemon-like "run" and "shutdown" paradigm
-  virtual void Start() = 0;
+  virtual bool Start() = 0;
   virtual bool ShutDown(const char* format, ...) = 0;
 
   // Any application needs to register an open socket so that it can be
   // intercepted and virtually tunneled
   virtual struct sockaddr* RegisterPeer(int app_socket,
-                                        LogicalAddress peer_addr,
-                                        unsigned short peer_port) = 0;
+                                        LogicalAddress peer_addr) = 0;
 
  protected:
-//  // A mobile agent needs to instantiate a connection to the home agent
-//  virtual void ConnectToHome(unsigned short port, char* data, bool initial) = 0;
-
-//  // A mobile node needs to update the home agent when it's IP changes
-//  virtual void ChangeHomeIdentity() = 0;
+  // The mobile agent's major function is to automatically service out updates
+  // in its location and poll the active subscriptions so that if any of our
+  // peers have changed location we can reconnect with minimal packet loss.
+  virtual void UpdateRendezvousServer() = 0;
+  virtual void PollSubscriptions() = 0;
 };
 
 #endif  // _PERMANENTIP_MOBILENODE_MOBILENODE_H_

@@ -68,6 +68,21 @@ static inline PhysicalAddress IntToIPString(int physical_address) {
   return string(buffer);
 }
 
+static inline int IPStringToInt(PhysicalAddress physical_address) {
+  unsigned int address = 0;
+  int offset = 0;
+
+  // Fix fencepost issue (hack)
+  physical_address += ".";
+  do {
+    address += atoi(physical_address.c_str()) << offset;
+    offset += 8;
+    physical_address = physical_address.substr(physical_address.find(".") + 1);
+  } while (physical_address.find(".") != string::npos);
+
+  return address;
+}
+
 static inline int GetCurrentIPAddress() {
   struct ifaddrs *if_address, *if_struct;
   getifaddrs(&if_struct);

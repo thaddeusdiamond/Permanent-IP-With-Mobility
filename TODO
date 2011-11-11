@@ -1,4 +1,11 @@
-TCP Support
-IPv6 Support (ifdefs)
 Commenting (look at Google Style guidelines to see how to)
 Code redundancy removal
+Deployment scripts that use SSH/multiple terminals
+Testing for Mobile Node, Applications
+
+TCP Support
+IPv6 Support (ifdefs)
+Accept incoming requests to set values at DNS
+  - If first time registering at RS then send update to DNS about our locale
+  - Use port location in DNS lookup, or try several ports until we get one
+      (how does real DNS do this?)

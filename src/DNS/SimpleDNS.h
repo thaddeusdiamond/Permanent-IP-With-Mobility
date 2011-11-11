@@ -22,7 +22,7 @@ using std::tr1::unordered_map;
 class SimpleDNS : public DNS {
  public:
   // The constructor simply needs a port to listen for lookups
-  explicit SimpleDNS(unsigned short port) : port_(port),
+  explicit SimpleDNS() : port_(GLOB_LOOKUP_PORT),
     domain_(GLOB_DOM), transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {}
 
   // Null destructor

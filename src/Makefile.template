@@ -1,0 +1,37 @@
+# Build files only if they exist.
+$(UPPERC_DIR)_OBJS := $(patsubst %.cc, $(OBJDIR)/%.o, $($(UPPERC_DIR)_SRCS))
+$(UPPERC_DIR)_DEPLOY := $(BINDIR)/$(EXECUTABLE)
+
+$(UPPERC_DIR)_TEST_SRCS := $(wildcard Tests/$(LOWERC_DIR)/*Test.cc)
+$(UPPERC_DIR)_TEST_OBJS := $(patsubst %.cc, $(OBJDIR)/%Test.o, $($(UPPERC_DIR)_SRCS))
+$(UPPERC_DIR)_TESTS     := $(patsubst %.cc, $(BINDIR)/%Test, $($(UPPERC_DIR)_SRCS))
+
+# Makeable directives (i.e. "make all")
+all: $(LOWERC_DIR)-all
+$(LOWERC_DIR)-all: $(LOWERC_DIR) $(LOWERC_DIR)-obj $(LOWERC_DIR)-tests
+$(LOWERC_DIR): $($(UPPERC_DIR)_DEPLOY)
+$(LOWERC_DIR)-obj: $($(UPPERC_DIR)_OBJS)
+$(LOWERC_DIR)-tests: $($(UPPERC_DIR)_TESTS)
+
+# Standard object files and test scripts that each directory must have
+$(OBJDIR)/$(LOWERC_DIR)/%.o: $(LOWERC_DIR)/%.cc
+	@echo + cxx $<
+	@mkdir -p $(@D)
+	$(V)$(CXX) $(CXXFLAGS) $(MDFLAGS) -o $@ -c $<
+	
+$(OBJDIR)/$(LOWERC_DIR)/%Test.o: Tests/$(LOWERC_DIR)/%Test.cc
+	@echo + cxx $<
+	@mkdir -p $(patsubst $(OBJDIR)%, $(LOGDIR)%, $(@D))
+	$(V)$(CXX) $(CXXFLAGS) $(MDFLAGS) -o $@ -c $<
+
+$(BINDIR)/$(LOWERC_DIR)/%Test: $($(UPPERC_DIR)_TEST_OBJS) $($(UPPERC_DIR)_OBJS) $(EXTRA_TEST_OBJS)
+	@echo + ld $@
+	@mkdir -p $(@D)
+	$(V)$(CXX) -o $@ $^ $(LDFLAGS)
+	
+$(BINDIR)/$(EXECUTABLE): $(EXECUTABLE_OBJS) $($(UPPERC_DIR)_OBJS)
+	@echo + ld $@
+	@mkdir -p $(@D)
+	$(V)$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+
+.PHONY: $(LOWERC_DIR)-all $(LOWERC_DIR) $(LOWERC_DIR)-tests test-$(LOWERC_DIR)

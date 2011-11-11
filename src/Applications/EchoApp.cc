@@ -9,6 +9,7 @@ bool EchoApp::Start() {
   if (!ConnectToPeer())
     return false;
 
+  sleep(5);
   Signal::HandleSignalInterrupts();
   do {
     PrintReceivedData();
@@ -19,10 +20,12 @@ bool EchoApp::Start() {
 }
 
 bool EchoApp::ShutDown(const char* format, ...) {
-  fprintf(stderr, "Shutting Down Echo App...\n");
+  fprintf(stderr, "Shutting Down Echo App (");
 
   va_list arguments;
   va_start(arguments, format);
+  fprintf(stderr, format, arguments);
+  perror(")");
 
   close(app_socket_);
   mobile_node_->ShutDown(format, arguments);
@@ -38,6 +41,17 @@ bool EchoApp::ConnectToPeer() {
   if (app_socket_ < 0)
     return ShutDown("Could not create a socket");
 
+  // Bind the socket to listen
+  struct sockaddr_in server;
+  memset(&server, 0, sizeof(server));
+  server.sin_family = domain_;
+  server.sin_addr.s_addr = INADDR_ANY;
+  server.sin_port = htons(app_port_);
+
+  if (bind(app_socket_, reinterpret_cast<struct sockaddr*>(&server),
+           sizeof(server)))
+    return ShutDown("Could not bind listening connection");
+
   // Set the socket to be reusable
   int on = 1;
   if (setsockopt(app_socket_, SOL_SOCKET, SO_REUSEADDR,
@@ -52,10 +66,23 @@ bool EchoApp::ConnectToPeer() {
     return ShutDown("Error setting the socket to nonblocking");
 
   // Connect to the peer with registration at the mobile node daemon
-  fprintf(stderr, "Connecting to peer, please do not disconnect...\n");
-  peer_info_ = mobile_node_->RegisterPeer(app_socket_, peer_addr_, peer_port_);
-  if (peer_info_ == NULL)
-    return ShutDown("There was an error connecting to the peer");
+  fprintf(stderr, "Connecting to peer, please do not disconnect...");
+  peer_info_ = mobile_node_->RegisterPeer(app_socket_, peer_addr_);
+  int backoff = 1;
+  while (peer_info_ == NULL) {
+    if (backoff > MAX_ATTEMPTS)
+      return ShutDown("Peer lookup failed");
+
+    sleep(backoff++);
+    fprintf(stderr, "Could not connect to peer, trying again.\n");
+    peer_info_ = mobile_node_->RegisterPeer(app_socket_, peer_addr_);
+  }
+
+  // Modify sockaddr to have domain and a port
+  struct sockaddr_in* peer_container =
+    reinterpret_cast<struct sockaddr_in*>(peer_info_);
+  peer_container->sin_family = domain_;
+  peer_container->sin_port = htons(peer_port_);
 
   fprintf(stderr, " OK.\n");
   return true;
@@ -68,31 +95,32 @@ bool EchoApp::PrintReceivedData() {
   char buffer[4096];
   memset(buffer, 0, sizeof(buffer));
 #ifdef UDP_APPLICATION
-  int bytes_read = recvfrom(app_socket_, buffer, sizeof(buffer), 0,
+  int bytes_read = recvfrom(app_socket_, buffer, sizeof(buffer), MSG_PEEK,
                             reinterpret_cast<struct sockaddr*>(&request_src),
                             &request_src_size);
-#endif
-#ifdef TCP_APPLICATION
+#elif TCP_APPLICATION
   int bytes_read = -1;
   return ShutDown("TCP is not yet supported in the application");
 #endif
 
   // Received a communication
-  if (bytes_read > 0) {
+  if (bytes_read > 0 && request_src.sin_addr.s_addr !=
+      static_cast<unsigned int>(IPStringToInt(rendezvous_server_))) {
+    // Clear the peek buffer
+    recvfrom(app_socket_, buffer, sizeof(buffer), 0,
+             reinterpret_cast<struct sockaddr*>(&request_src),
+             &request_src_size);
+
     // Echo back the peer's communication
     if (string(buffer) != keyword_) {
       fprintf(stderr, "Received message '%s' from %d:%d\n", buffer,
               request_src.sin_addr.s_addr, ntohs(request_src.sin_port));
-#ifdef UDP_APPLICATION
       EchoMessage(buffer, reinterpret_cast<struct sockaddr*>(&request_src));
-#endif
-#ifdef TCP_APPLICATION
-      request_src_size = -1;
-#endif
 
     // Received back our own, bury it...
     } else {
       fprintf(stderr, "Received back our own communication. Burying...\n");
+      received_ = true;
     }
 
   // An error occurred in reading
@@ -104,14 +132,19 @@ bool EchoApp::PrintReceivedData() {
 }
 
 bool EchoApp::EchoMessage(string message, struct sockaddr* peer_info) {
+  // Avoid sending dups and set the sentinel if this is our heartbeat going out
+  if (message == keyword_ && !received_)
+    return false;
+  if (message == keyword_)
+    received_ = false;
+
   peer_info = (peer_info == NULL ? peer_info_ : peer_info);
   socklen_t peer_size = sizeof(*peer_info);
 
 #ifdef UDP_APPLICATION
   sendto(app_socket_, message.c_str(), message.length() + 1, 0,
          peer_info, peer_size);
-#endif
-#ifdef TCP_APPLICATION
+#elif TCP_APPLICATION
   return ShutDown("TCP is not yet supported in the DNS");
 #endif
 
@@ -122,7 +155,8 @@ bool EchoApp::EchoMessage(string message, struct sockaddr* peer_info) {
 
 int EchoApp::CreateMobileNodeDelegate() {
   pthread_t mobile_node_daemon;
-  mobile_node_ = new SimpleMobileNode(dns_server_, dns_port_);
+  mobile_node_ = new SimpleMobileNode(logical_address_, dns_server_,
+                                      rendezvous_server_);
 
   int thread_status = pthread_create(&mobile_node_daemon, NULL,
                                      &RunMobileAgentThread, mobile_node_);

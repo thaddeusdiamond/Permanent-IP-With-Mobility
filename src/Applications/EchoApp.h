@@ -22,12 +22,13 @@
 
 class EchoApp : public Application {
  public:
-  explicit EchoApp(string keyword,
-                   LogicalAddress peer_addr, unsigned short peer_port,
-                   PhysicalAddress dns_server, unsigned short dns_port,
-                   unsigned short app_port) :
-      keyword_(keyword), peer_addr_(peer_addr), peer_port_(peer_port),
-      app_port_(app_port), dns_server_(dns_server), dns_port_(dns_port),
+  EchoApp(string keyword,
+          LogicalAddress logical_address, unsigned short app_port,
+          LogicalAddress peer_addr, unsigned short peer_port,
+          PhysicalAddress dns_server, PhysicalAddress rendezvous_server) :
+      keyword_(keyword), received_(true), logical_address_(logical_address),
+      peer_addr_(peer_addr), peer_port_(peer_port), app_port_(app_port),
+      dns_server_(dns_server), rendezvous_server_(rendezvous_server),
       domain_(GLOB_DOM), transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {}
   virtual ~EchoApp() {
     delete mobile_node_;
@@ -57,8 +58,14 @@ class EchoApp : public Application {
 
   // We keep track of the keyword we are going to send out to the server so that
   // we don't de-dup our traffic.  We make the assumption no two echo
-  // applications have the same keyword.
+  // applications have the same keyword.  Also, we want to make sure we don't
+  // overload so we're going to wait until we get our message back before
+  // retransmitting.
   string keyword_;
+  bool received_;
+
+  // Current node's logical address
+  LogicalAddress logical_address_;
 
   // We also want to keep track of what host and port number we are
   // communicating with.  We instantiate the socket normally, but later register
@@ -71,9 +78,9 @@ class EchoApp : public Application {
   int app_socket_;
   unsigned short app_port_;
 
-  // We need to know which DNS server we are talking with initially
+  // We need to know which DNS and RS server we are talking with initially
   PhysicalAddress dns_server_;
-  unsigned short dns_port_;
+  PhysicalAddress rendezvous_server_;
 
   // We specify how we communicate with other people (by default TCP).
   Domain domain_;

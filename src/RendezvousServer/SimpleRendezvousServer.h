@@ -13,6 +13,7 @@
 #include <cassert>
 #include <cstdarg>
 #include <set>
+#include <utility>
 
 #include "Common/Utils.h"
 #include "Common/Signal.h"
@@ -20,13 +21,13 @@
 
 using std::tr1::unordered_map;
 using std::set;
+using std::pair;
 
 class SimpleRendezvousServer : public RendezvousServer {
  public:
   // The constructor simply needs a port to listen for lookups
-  explicit SimpleRendezvousServer(unsigned short registration_port,
-                                  unsigned short lookup_port) :
-    registration_port_(registration_port), lookup_port_(lookup_port),
+  explicit SimpleRendezvousServer() :
+    registration_port_(GLOB_REGIST_PORT), lookup_port_(GLOB_LOOKUP_PORT),
     domain_(GLOB_DOM), transport_layer_(GLOB_TL), protocol_(GLOB_PROTO) {}
 
   // Null destructor
@@ -41,8 +42,9 @@ class SimpleRendezvousServer : public RendezvousServer {
   virtual bool UpdateAddress(LogicalAddress name, PhysicalAddress address);
 
   // Adding/removing subscribers is key to the operation of a RS
-  virtual PhysicalAddress ChangeSubscription(LogicalAddress subscriber,
-                                             LogicalAddress client);
+  virtual PhysicalAddress ChangeSubscription(
+      pair<LogicalAddress, unsigned short>,
+      LogicalAddress client);
 
   // We specifically want to respond to connections given to us on the specified
   // port.  For a simple RS, this merely involves listening in and then
@@ -55,7 +57,8 @@ class SimpleRendezvousServer : public RendezvousServer {
   // addresses that correspond to the physical address of each name, and also
   // which clients are subscribed to receive updates
   unordered_map<LogicalAddress, PhysicalAddress> registered_names_;
-  unordered_map<LogicalAddress, set<LogicalAddress> > subscriptions_;
+  unordered_map<LogicalAddress, set< pair<LogicalAddress, unsigned short> > >
+    subscriptions_;
 
   // We maintain which port we are listening for incoming registrations on
   unsigned short registration_port_;

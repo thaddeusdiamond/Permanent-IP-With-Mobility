@@ -5,7 +5,8 @@
 #include "DNS/SimpleDNS.h"
 
 bool SimpleDNS::Start() {
-  assert(AddName("python.cs.yale.edu", "128.36.232.46"));
+  assert(AddName("python", "128.36.232.37"));  // RS on Cobra
+  assert(AddName("tick", "128.36.232.37"));    // RS on Cobra
   assert(BeginListening());
 
   Signal::RestartProgram();
@@ -18,13 +19,12 @@ bool SimpleDNS::Start() {
 }
 
 bool SimpleDNS::ShutDown(const char* format, ...) {
-  fprintf(stderr, "Shutting Down DNS Server... ");
+  fprintf(stderr, "Shutting Down DNS Server (");
 
   va_list arguments;
   va_start(arguments, format);
-
   fprintf(stderr, format, arguments);
-  perror(" ");
+  perror(")");
 
   close(listener_);
   Signal::ExitProgram(0);
@@ -80,8 +80,7 @@ bool SimpleDNS::HandleRequests() {
   int bytes_read = recvfrom(listener_, buffer, sizeof(buffer), 0,
                             reinterpret_cast<struct sockaddr*>(&request_src),
                             &request_src_size);
-#endif
-#ifdef TCP_APPLICATION
+#elif TCP_APPLICATION
   int bytes_read = -1;
   ShutDown("TCP is not yet supported in the DNS");
 #endif
@@ -96,8 +95,7 @@ bool SimpleDNS::HandleRequests() {
     sendto(listener_, buffer, sizeof(buffer), 0,
            reinterpret_cast<struct sockaddr*>(&request_src),
            request_src_size);
-#endif
-#ifdef TCP_APPLICATION
+#elif TCP_APPLICATION
     request_src_size = -1;
 #endif
   } else if (bytes_read < 0 && errno != EWOULDBLOCK && errno != EAGAIN) {
