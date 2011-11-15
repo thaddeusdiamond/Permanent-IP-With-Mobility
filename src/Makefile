@@ -11,6 +11,15 @@ OBJDIR := ../obj
 BINDIR := ../bin
 LOGDIR := ../logs
 GTEST  := ../ext/googletest
+DOCOUT := ../doc/html ../doc/latex
+
+# External programs that are linked and used automatically in the process
+GTEST     := ../ext/googletest
+DOCDIR    := ../doc
+DOXY_EXE  := doxygen
+DOXY_CONF := PermanentIP.doxygen
+
+# Directives for where the source files should look to include headers from
 TOP    := .
 
 # '$(V)' controls whether the lab makefiles print verbose commands (the
@@ -49,6 +58,11 @@ test: $(TESTS)
 
 clean:
 	rm -rf $(OBJDIR) $(LOGDIR) $(BINDIR)
+	
+#If they specify the use of doxy, then we make doxy first
+with-doxy:
+	@echo +doc $(DOXY_EXE) $(DOCDIR)/$(DOXY_CONF) \> $(DOCOUT)
+	@cd $(DOCDIR); $(DOXY_EXE) $(DOXY_CONF)
 	
 # This magic automatically generates makefile dependencies
 # for header files included from C source files we compile,
