@@ -133,7 +133,7 @@ namespace Utils {
   static inline void Log(Level level, const char* format, ...) {
     va_list arguments;
     va_start(arguments, format);
-
+    
     if (log_file == NULL)
       OpenLogFiles();
 
@@ -150,12 +150,17 @@ namespace Utils {
              level_descriptors[level].c_str());
   #endif
 #endif
-    strncat(log_format, format, strlen(format));
+
+    // There are issues with printing using va_args so we use vsprintf
+    char buffer[4096];
+    memset(buffer, 0, sizeof(buffer));
+    vsprintf(buffer, format, arguments);
+    strncat(log_format, buffer, strlen(buffer));
 
     // Make sure it's appended with a newline
-    fprintf(log_file, log_format, arguments);
+    fprintf(log_file, log_format);
     fprintf(log_file, "\n");
-    fprintf(level_file_handles[level], log_format, arguments);
+    fprintf(level_file_handles[level], log_format);
     fprintf(level_file_handles[level], "\n");
     va_end(arguments);
   }
@@ -171,11 +176,8 @@ namespace Utils {
    *
    * @return      True on successful finish, false if error
    **/
-  static inline bool Log(FILE *filedes, Level level,
+  static inline bool Log(FILE* filedes, Level level,
                          const char* format, ...) {
-    va_list arguments;
-    va_start(arguments, format);
-
 #ifdef PREPENDED
   #ifdef COLOR_OUT
     fprintf(filedes, "%s[%s]%s ", level_colors[level].c_str(),
@@ -184,10 +186,18 @@ namespace Utils {
     fprintf(filedes, "[%s] ", level_descriptors[level].c_str());
   #endif
 #endif
-    fprintf(filedes, format, arguments);
-    fprintf(filedes, "\n");
 
+    va_list arguments;
+    va_start(arguments, format);
+    
+    char buffer[4096];
+    memset(buffer, 0, sizeof(buffer));
+    vsprintf(buffer, format, arguments);
+    
+    fprintf(filedes, buffer);
+    fprintf(filedes, "\n");
     va_end(arguments);
+
     return true;
   }
 
@@ -211,7 +221,12 @@ namespace Utils {
 
     va_list arguments;
     va_start(arguments, format);
-    return Log(log, level, format, arguments);
+
+    char buffer[4096];
+    memset(buffer, 0, sizeof(buffer));
+    vsprintf(buffer, format, arguments);
+
+    return Log(log, level, buffer);
   }
 
   /**

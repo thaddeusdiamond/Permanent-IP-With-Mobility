@@ -119,7 +119,7 @@ bool EchoApp::PrintReceivedData() {
 
     // Echo back the peer's communication
     if (string(buffer) != keyword_) {
-      Log(stderr, SUCCESS, "Received message '%s' from %d:%d", buffer,
+      Log(stderr, SUCCESS, "Received message '%s' from %d:%d", &buffer[0],
           request_src.sin_addr.s_addr, ntohs(request_src.sin_port));
       SendMessage(buffer, reinterpret_cast<struct sockaddr*>(&request_src));
 
