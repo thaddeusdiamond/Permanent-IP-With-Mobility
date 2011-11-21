@@ -1,3 +1,6 @@
 obj
 bin
 logs
+Server.Kill
+Server.Deploy
+App.Deploy

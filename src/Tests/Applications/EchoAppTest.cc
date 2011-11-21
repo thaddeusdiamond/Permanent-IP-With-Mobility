@@ -1,13 +1,19 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// This is a test for our simple echo application
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * Testing for a simple application
+ **/
 
 #include <pthread.h>
 #include <gtest/gtest.h>
 #include "Applications/EchoApp.h"
 
-// TODO(Thad): These tests will hang because they do not override typical
-// integrated functions into dummy black boxes.
+/** @todo These tests will hang because they do not override typical
+          integrated functions into dummy black boxes. **/
 
 // Non-member function required by PThread
 static inline void* RunEchoAppThread(void* echo_app) {
@@ -15,7 +21,6 @@ static inline void* RunEchoAppThread(void* echo_app) {
   return NULL;
 }
 
-// Dummy tester class
 namespace {
   class EchoAppTest : public ::testing::Test {
    protected:
@@ -54,8 +59,9 @@ namespace {
     Protocol protocol_;
   };
 }
-
-// Start and stop test (basic functionality)
+/**
+ * @test    Echo App start and stop test (basic functionality)
+ **/
 TEST_F(EchoAppTest, StartsAndStops) {
   ASSERT_FALSE(echo_app_->ShutDown("Normal termination"));
 }

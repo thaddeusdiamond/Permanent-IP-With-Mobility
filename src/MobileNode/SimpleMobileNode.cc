@@ -1,7 +1,12 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// This is a simple implementation of the mobile node agent in our rendezvous
-// server scheme
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * This is a simple implementation of the mobile node daemon in our scheme
+ **/
 
 #include "MobileNode/SimpleMobileNode.h"
 

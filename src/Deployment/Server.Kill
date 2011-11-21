@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# The following file kills active RS and DNS deployed using Server.deploy
+ssh dolphin "killall -9 RunDNS &> /dev/null" & &> /dev/null
+ssh cobra   "killall -9 RunRS &> /dev/null"  & &> /dev/null
+echo "Servers shut down"

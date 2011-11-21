@@ -1,28 +1,72 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// This is an abstract interface for a mobile node traveling on the network
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * This is an abstract interface for any mobile node delegate running on a
+ * device
+ **/
 
 #ifndef _PERMANENTIP_MOBILENODE_MOBILENODE_H_
 #define _PERMANENTIP_MOBILENODE_MOBILENODE_H_
 
 class MobileNode {
  public:
+  /**
+   * The destructor for a mobile node is responsible for freeing all memory
+   * associated with the mobile node daemon
+   **/
   virtual ~MobileNode() {}
 
-  // We use a daemon-like "run" and "shutdown" paradigm
+  /**
+   * The mobile node follows a typical server-like mechanism, where the Start()
+   * function is responsible for registering the current IP address at the
+   * designated rendezvous server, constantly updating the RS and polling
+   * the existing subscriptions for updates.
+   *
+   * @returns  True unless there was an error connecting to the RS
+    **/
   virtual bool Start() = 0;
+
+  /**
+   * In order to kill the mobile node daemon, we use a SIGINT, which calls the
+   * ShutDown() method (closing open sockets and telling the program to exit)
+   *
+   * @param   format        The format of the message to print before exiting
+   * @param   ...           The list of arguments to pass to the exit message
+   *
+   * @returns False always
+   **/
   virtual bool ShutDown(const char* format, ...) = 0;
 
-  // Any application needs to register an open socket so that it can be
-  // intercepted and virtually tunneled
+  /**
+   * Any application needs to register an open socket so that it can be
+   * intercepted and updated/polled
+   *
+   * @param   app_socket    The app socket being registered for the new peer
+   * @param   peer_addr     The logical address of the peer being registered
+   *
+   * @returns A pointer to a generic sockaddr struct that can be reinterpreted
+   *          by the application to send messages to the peer. The mobile
+   *          node retains this pointer so that it can transparently
+   *          update the peer's location
+   **/
   virtual struct sockaddr* RegisterPeer(int app_socket,
                                         LogicalAddress peer_addr) = 0;
 
  protected:
-  // The mobile agent's major function is to automatically service out updates
-  // in its location and poll the active subscriptions so that if any of our
-  // peers have changed location we can reconnect with minimal packet loss.
+  /**
+   * The mobile agent's major function is to automatically service out updates
+   * in its location.
+   */
   virtual void UpdateRendezvousServer() = 0;
+
+  /**
+   * The mobile node also polls the active subscriptions so that if any of our
+   * peers have changed location we can reconnect with minimal packet loss.
+   **/
   virtual void PollSubscriptions() = 0;
 };
 

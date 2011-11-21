@@ -1,10 +1,18 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// Deployment for any DNS (SimpleDNS is the only one supported)
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * Deployment for any DNS (Simple DNS is the only one supported)
+ **/
 
 #include <cstdlib>
 #include "DNS/DNS.h"
 #include "DNS/SimpleDNS.h"
+
+using Utils::Die;
 
 #define MIN_ARGUMENTS 2
 #define SRS_NUM_ARGUMENTS 2

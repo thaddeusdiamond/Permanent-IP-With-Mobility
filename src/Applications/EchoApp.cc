@@ -1,6 +1,12 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// This is the implementation for our sample echo app
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * This is the implementation for our sample echo app
+ **/
 
 #include "Applications/EchoApp.h"
 
@@ -13,7 +19,7 @@ bool EchoApp::Start() {
   Signal::HandleSignalInterrupts();
   do {
     PrintReceivedData();
-    EchoMessage(keyword_);
+    SendMessage(keyword_);
     sleep(1);
   } while (Signal::ShouldContinue());
   return true;
@@ -115,7 +121,7 @@ bool EchoApp::PrintReceivedData() {
     if (string(buffer) != keyword_) {
       fprintf(stderr, "Received message '%s' from %d:%d\n", buffer,
               request_src.sin_addr.s_addr, ntohs(request_src.sin_port));
-      EchoMessage(buffer, reinterpret_cast<struct sockaddr*>(&request_src));
+      SendMessage(buffer, reinterpret_cast<struct sockaddr*>(&request_src));
 
     // Received back our own, bury it...
     } else {
@@ -131,7 +137,7 @@ bool EchoApp::PrintReceivedData() {
   return true;
 }
 
-bool EchoApp::EchoMessage(string message, struct sockaddr* peer_info) {
+bool EchoApp::SendMessage(string message, struct sockaddr* peer_info) {
   // Avoid sending dups and set the sentinel if this is our heartbeat going out
   if (message == keyword_ && !received_)
     return false;

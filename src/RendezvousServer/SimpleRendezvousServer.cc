@@ -1,6 +1,12 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// This is an implementation for a simple version of DNS
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * This is an implementation of a simple version of the RS in our scheme
+ **/
 
 #include "RendezvousServer/SimpleRendezvousServer.h"
 
@@ -134,7 +140,10 @@ bool SimpleRendezvousServer::UpdateAddress(LogicalAddress name,
   set< pair<LogicalAddress, unsigned short> >::iterator i;
 
   for (i = subscriptions_[name].begin(); i != subscriptions_[name].end(); i++) {
-    // TODO(Thad): Improve this, we just use a gethostbyname lookup for now
+    /**
+     * @todo  Improve this, we just use a gethostbyname lookup for now. In the
+     *        future we need to do a full round robin to the DNS
+     **/
     struct hostent* subscriber_host = gethostbyname(i->first.c_str());
 
     struct sockaddr_in subscriber;

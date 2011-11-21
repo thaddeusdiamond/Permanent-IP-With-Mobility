@@ -1,10 +1,19 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// This is an implementation for a simple version of DNS
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * This is an implementation for a simple version of DNS
+ **/
 
 #include "DNS/SimpleDNS.h"
 
 bool SimpleDNS::Start() {
+  /** @todo   Hypothetically we should accept requests for adding new names
+   *          to the namespace from trusted sources instead of just using
+   *          statically defined names (as we do for a demo) **/
   assert(AddName("python", "128.36.232.37"));  // RS on Cobra
   assert(AddName("tick", "128.36.232.37"));    // RS on Cobra
   assert(BeginListening());

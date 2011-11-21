@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# The following file deploys a rendezvous server and a mobile node to the
+# servers necessary given the file's configuration
+ssh dolphin "cd $PWD; bin/RunDNS SDNS &> /dev/null" & &> /dev/null
+ssh cobra   "cd $PWD; bin/RunRS SRS &> /dev/null"   & &> /dev/null
+echo "Server setup complete"

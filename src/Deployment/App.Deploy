@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# This is a nice way to run a default pair of nodes without having to run
+# the whole nasty script
+bin/RunApp EchoApp $1 $2 16000 $3 16000 128.36.232.21 128.36.232.37

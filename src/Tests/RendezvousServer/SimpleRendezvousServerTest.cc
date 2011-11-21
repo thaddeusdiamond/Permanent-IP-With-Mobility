@@ -1,10 +1,18 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// Test for a simple rendezvous server
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * Testing for a simple DNS
+ **/
 
 #include <pthread.h>
 #include <gtest/gtest.h>
 #include "RendezvousServer/SimpleRendezvousServer.h"
+
+using Utils::GetCurrentIPAddress;
 
 // Non-member function required by PThread
 static inline void* RunRendezvousServerThread(void* rendezvous_server) {
@@ -13,7 +21,6 @@ static inline void* RunRendezvousServerThread(void* rendezvous_server) {
   return NULL;
 }
 
-// Dummy tester class
 namespace {
   class SimpleRendezvousServerTest : public ::testing::Test {
    protected:
@@ -50,12 +57,18 @@ namespace {
   };
 }
 
-// Start and stop test (basic functionality)
+/**
+ * @test    RS start and stop test (basic functionality)
+ **/
 TEST_F(SimpleRendezvousServerTest, StartsAndStops) {
   ASSERT_FALSE(rendezvous_server_->ShutDown("Normal termination"));
 }
 
-// Ensure registering names and lookups are correct
+
+/**
+ * @test    Ensure that the RS handles updates and changes in subscriptions
+ *          (only over the local network)
+ **/
 TEST_F(SimpleRendezvousServerTest, UpdatesAndHandlesSubscribers) {
   ASSERT_TRUE(rendezvous_server_->UpdateAddress("tick.cs.yale.edu",
                                                 "128.36.232.50"));
@@ -90,7 +103,9 @@ TEST_F(SimpleRendezvousServerTest, UpdatesAndHandlesSubscribers) {
   ASSERT_FALSE(rendezvous_server_->ShutDown("Normal termination"));
 }
 
-// Ensure it handles network lookups
+/**
+ * @test    Ensure that network requests (lookups and updates) are handled
+ **/
 TEST_F(SimpleRendezvousServerTest, HandlesNetworkRequests) {
   int sender = socket(domain_, transport_layer_, protocol_);
   struct sockaddr_in sending_info;
@@ -175,7 +190,7 @@ TEST_F(SimpleRendezvousServerTest, HandlesNetworkRequests) {
             rendezvous_server_->subscriptions_[
               "tick.cs.yale.edu"].end());
 
-  // TODO(Thad): Need to check that updating peers works when the location moves
+  /** @todo  Need to check that updating peers works when the location moves **/
   fprintf(stderr, "We still don't support updating peers...\n");
 
   ASSERT_FALSE(rendezvous_server_->ShutDown("Normal termination"));

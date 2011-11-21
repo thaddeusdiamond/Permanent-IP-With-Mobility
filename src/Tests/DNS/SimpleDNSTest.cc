@@ -1,10 +1,18 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// Test for a simple DNS
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * Testing for a simple DNS
+ **/
 
 #include <pthread.h>
 #include <gtest/gtest.h>
 #include "DNS/SimpleDNS.h"
+
+using Utils::GetCurrentIPAddress;
 
 // Non-member function required by PThread
 static inline void* RunDNSThread(void* dns) {
@@ -12,7 +20,6 @@ static inline void* RunDNSThread(void* dns) {
   return NULL;
 }
 
-// Dummy tester class
 namespace {
   class SimpleDNSTest : public ::testing::Test {
    protected:
@@ -48,12 +55,16 @@ namespace {
   };
 }
 
-// Start and stop test (basic functionality)
+/**
+ * @test    DNS start and stop test (basic functionality)
+ **/
 TEST_F(SimpleDNSTest, StartsAndStops) {
   ASSERT_FALSE(dns_->ShutDown("Normal termination"));
 }
 
-// Ensure adding names and lookups are correct
+/**
+ * @test    DNS Domain additions and lookups (not over the network)
+ **/
 TEST_F(SimpleDNSTest, AddsAndLooksUp) {
   ASSERT_TRUE(dns_->AddName("tick.cs.yale.edu", "128.36.232.50"));
   EXPECT_NE(dns_->LookupName("tick.cs.yale.edu"), "128.36.232.49");
@@ -62,7 +73,9 @@ TEST_F(SimpleDNSTest, AddsAndLooksUp) {
   ASSERT_FALSE(dns_->ShutDown("Normal termination"));
 }
 
-// Ensure it handles network lookups
+/**
+ * @test    DNS lookups for nameservers (over the network)
+ **/
 TEST_F(SimpleDNSTest, HandlesNetworkRequests) {
   int sender = socket(domain_, transport_layer_, protocol_);
 

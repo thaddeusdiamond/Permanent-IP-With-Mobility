@@ -1,13 +1,19 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// Test for a simple mobile node
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * Testing for a simple Mobile Node
+ **/
 
 #include <pthread.h>
 #include <gtest/gtest.h>
 #include "MobileNode/SimpleMobileNode.h"
 
-// TODO(Thad): These tests will hang because they do not override typical
-// integrated functions into dummy black boxes.
+/** @todo These tests will hang because they do not override typical
+          integrated functions into dummy black boxes. **/
 
 // Non-member function required by PThread
 static inline void* RunMobileNodeThread(void* mobile_node) {
@@ -15,7 +21,6 @@ static inline void* RunMobileNodeThread(void* mobile_node) {
   return NULL;
 }
 
-// Dummy tester class
 namespace {
   class SimpleMobileNodeTest : public ::testing::Test {
    protected:
@@ -53,7 +58,9 @@ namespace {
   };
 }
 
-// Start and stop test (basic functionality)
+/**
+ * @test    Mobile Node start and stop test (basic functionality)
+ **/
 TEST_F(SimpleMobileNodeTest, StartsAndStops) {
   ASSERT_FALSE(mobile_node_->ShutDown("Normal termination"));
 }

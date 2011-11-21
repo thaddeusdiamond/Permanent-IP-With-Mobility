@@ -19,6 +19,12 @@ DOCDIR    := ../doc
 DOXY_EXE  := doxygen
 DOXY_CONF := PermanentIP.doxygen
 
+# Deployment scripts for ease of use
+DEPLOY_ENDPT   := ../
+DEPLOY_DIR     := Deployment/
+DEPLOY_SCRIPTS := *.Deploy
+KILL_SCRIPTS   := *.Kill
+
 # Directives for where the source files should look to include headers from
 TOP    := .
 
@@ -43,6 +49,9 @@ TESTS :=
 
 # Make sure that 'all' is the first target
 all:
+	@echo + Copying deployment scripts to $(DEPLOY_ENDPT)
+	@mkdir -p $(DEPLOY_DIR)
+	@cp $(DEPLOY_DIR)$(DEPLOY_SCRIPTS) $(DEPLOY_DIR)$(KILL_SCRIPTS) $(DEPLOY_ENDPT)
 
 # We define a common "Makefrag"-style template so that we can just set dir
 # specific variables and include that template
@@ -57,7 +66,7 @@ include Applications/Makefile.inc
 test: $(TESTS)
 
 clean:
-	rm -rf $(OBJDIR) $(LOGDIR) $(BINDIR)
+	rm -rf $(OBJDIR) $(LOGDIR) $(BINDIR) $(DEPLOY_ENDPT)$(DEPLOY_SCRIPTS) $(DEPLOY_ENDPT)$(KILL_SCRIPTS)
 	
 #If they specify the use of doxy, then we make doxy first
 with-doxy:

@@ -1,10 +1,18 @@
-// Author: Thaddeus Diamond (diamond@cs.yale.edu)
-//
-// Deployment for any application (Echo Application the only one supported)
+/**
+ * @file
+ * @author Thaddeus Diamond <diamond@cs.yale.edu>
+ * @version 0.1
+ *
+ * @section DESCRIPTION
+ *
+ * Deployment for any application (Echo Application the only one supported)
+ **/
 
 #include <cstdlib>
 #include "Applications/Application.h"
 #include "Applications/EchoApp.h"
+
+using Utils::Die;
 
 #define MIN_ARGUMENTS 2
 #define ECHO_NUM_ARGUMENTS 9
