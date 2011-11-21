@@ -9,8 +9,11 @@
  **/
 
 #include <cstdio>
+#include "Common/Utils.h"
+
+using Utils::Log;
 
 int main(int argc, char* argv[]) {
-  fprintf(stderr, "MN not supported yet.\n");
+  Log(stderr, FATAL, "MN not supported yet.");
   return 1;
 }

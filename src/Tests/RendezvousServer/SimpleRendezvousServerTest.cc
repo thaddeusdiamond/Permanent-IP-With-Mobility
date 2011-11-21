@@ -13,6 +13,7 @@
 #include "RendezvousServer/SimpleRendezvousServer.h"
 
 using Utils::GetCurrentIPAddress;
+using Utils::Log;
 
 // Non-member function required by PThread
 static inline void* RunRendezvousServerThread(void* rendezvous_server) {
@@ -84,6 +85,7 @@ TEST_F(SimpleRendezvousServerTest, UpdatesAndHandlesSubscribers) {
                                                    GLOB_REGIST_PORT),
              "tick.cs.yale.edu"),
             "128.36.232.50");
+
   EXPECT_NE(rendezvous_server_->subscriptions_[
               "tick.cs.yale.edu"].find(
                 pair<LogicalAddress, unsigned short>("thad.cs.yale.edu",
@@ -137,7 +139,7 @@ TEST_F(SimpleRendezvousServerTest, HandlesNetworkRequests) {
            reinterpret_cast<struct sockaddr*>(&server),
            &server_size);
 #elif TCP_APPLICATION
-  fprintf(stderr, "TCP is not yet supported\n");
+  Log(stderr, FATAL, "TCP is not yet supported");
   ASSERT_TRUE(false);
 #endif
   char check[4096];
@@ -157,7 +159,7 @@ TEST_F(SimpleRendezvousServerTest, HandlesNetworkRequests) {
            reinterpret_cast<struct sockaddr*>(&server),
            &server_size);
 #elif TCP_APPLICATION
-  fprintf(stderr, "TCP is not yet supported\n");
+  Log(stderr, FATAL, "TCP is not yet supported");
   ASSERT_TRUE(false);
 #endif
   EXPECT_EQ(string(lookup_buffer), IntToIPString(GetCurrentIPAddress()));
@@ -179,7 +181,7 @@ TEST_F(SimpleRendezvousServerTest, HandlesNetworkRequests) {
            reinterpret_cast<struct sockaddr*>(&server),
            &server_size);
 #elif TCP_APPLICATION
-  fprintf(stderr, "TCP is not yet supported\n");
+  Log(stderr, FATAL, "TCP is not yet supported");
   ASSERT_TRUE(false);
 #endif
   EXPECT_EQ(string(lookup_buffer), IntToIPString(GetCurrentIPAddress()));
@@ -191,7 +193,7 @@ TEST_F(SimpleRendezvousServerTest, HandlesNetworkRequests) {
               "tick.cs.yale.edu"].end());
 
   /** @todo  Need to check that updating peers works when the location moves **/
-  fprintf(stderr, "We still don't support updating peers...\n");
+  Log(stderr, ERROR, "We still don't support updating peers...");
 
   ASSERT_FALSE(rendezvous_server_->ShutDown("Normal termination"));
 }

@@ -4,4 +4,4 @@
 # servers necessary given the file's configuration
 ssh dolphin "cd $PWD; bin/RunDNS SDNS &> /dev/null" & &> /dev/null
 ssh cobra   "cd $PWD; bin/RunRS SRS &> /dev/null"   & &> /dev/null
-echo "Server setup complete"
+echo -e "\e[00;32mServer setup complete\e[00m"

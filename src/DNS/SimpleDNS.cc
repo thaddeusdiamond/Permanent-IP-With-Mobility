@@ -28,17 +28,17 @@ bool SimpleDNS::Start() {
 }
 
 bool SimpleDNS::ShutDown(const char* format, ...) {
-  fprintf(stderr, "Shutting Down DNS Server (");
+  Log(stderr, DEBUG, "Shutting Down DNS Server (");
 
   va_list arguments;
   va_start(arguments, format);
-  fprintf(stderr, format, arguments);
+  Log(stderr, WARNING, format, arguments);
   perror(")");
 
   close(listener_);
   Signal::ExitProgram(0);
 
-  fprintf(stderr, "OK\n");
+  Log(stderr, SUCCESS, "OK");
   return false;
 }
 
@@ -73,7 +73,7 @@ bool SimpleDNS::BeginListening() {
   if (fcntl(listener_, F_SETFL, opts | O_NONBLOCK) < 0)
     return ShutDown("Error setting the socket to nonblocking");
 
-  fprintf(stderr, "Now listening for requests on port %d\n", port_);
+  Log(stderr, SUCCESS, "Now listening for requests on port %d", port_);
 
   return true;
 }
@@ -95,9 +95,9 @@ bool SimpleDNS::HandleRequests() {
 #endif
 
   if (bytes_read > 0) {
-    fprintf(stderr, "Sending DNS lookup of <%s, %s> to (%d:%d)\n", buffer,
-            LookupName(buffer).c_str(), request_src.sin_addr.s_addr,
-            ntohs(request_src.sin_port));
+    Log(stderr, SUCCESS, "Sending DNS lookup of <%s, %s> to (%d:%d)", buffer,
+        LookupName(buffer).c_str(), request_src.sin_addr.s_addr,
+        ntohs(request_src.sin_port));
     snprintf(buffer, sizeof(buffer), "%s", LookupName(buffer).c_str());
 
 #ifdef UDP_APPLICATION

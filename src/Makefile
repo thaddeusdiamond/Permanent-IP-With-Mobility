@@ -63,12 +63,12 @@ include RendezvousServer/Makefile.inc
 include MobileNode/Makefile.inc
 include Applications/Makefile.inc
 
-test: $(TESTS)
+Test: $(TESTS)
 
 clean:
-	rm -rf $(OBJDIR) $(LOGDIR) $(BINDIR) $(DEPLOY_ENDPT)$(DEPLOY_SCRIPTS) $(DEPLOY_ENDPT)$(KILL_SCRIPTS)
+	rm -rf $(OBJDIR) $(LOGDIR) $(BINDIR) $(DEPLOY_ENDPT)$(DEPLOY_SCRIPTS) $(DEPLOY_ENDPT)$(KILL_SCRIPTS) $(DOCOUT)
 	
-#If they specify the use of doxy, then we make doxy first
+# If they specify the use of doxy, then we make doxy first
 with-doxy:
 	@echo +doc $(DOXY_EXE) $(DOCDIR)/$(DOXY_CONF) \> $(DOCOUT)
 	@cd $(DOCDIR); $(DOXY_EXE) $(DOXY_CONF)

@@ -25,18 +25,18 @@ bool SimpleRendezvousServer::Start() {
 }
 
 bool SimpleRendezvousServer::ShutDown(const char* format, ...) {
-  fprintf(stderr, "Shutting Down Rendezvous Server (");
+  Log(stderr, DEBUG, "Shutting Down Rendezvous Server (");
 
   va_list arguments;
   va_start(arguments, format);
-  fprintf(stderr, format, arguments);
+  Log(stderr, WARNING, format, arguments);
   perror(")");
 
   close(registration_listener_);
   close(lookup_listener_);
   Signal::ExitProgram(0);
 
-  fprintf(stderr, "OK\n");
+  Log(stderr, SUCCESS, "OK");
   return false;
 }
 
@@ -71,7 +71,7 @@ int SimpleRendezvousServer::BeginListening(unsigned short port) {
   if (fcntl(listener, F_SETFL, opts | O_NONBLOCK) < 0)
     return ShutDown("Error setting the socket to nonblocking");
 
-  fprintf(stderr, "Now listening for requests on port %d\n", port);
+  Log(stderr, SUCCESS, "Now listening for requests on port %d", port);
 
   return listener;
 }
@@ -101,14 +101,14 @@ bool SimpleRendezvousServer::HandleRequests(int listening_socket, bool lookup) {
                                            request_src.sin_port),
       buffer).c_str();
 
-    fprintf(stderr, "Sending RS lookup of <%s, %s> to (%d:%d)\n", buffer,
-            peer, source_address, ntohs(request_src.sin_port));
+    Log(stderr, SUCCESS, "Sending RS lookup of <%s, %s> to (%d:%d)", buffer,
+        peer, source_address, ntohs(request_src.sin_port));
     snprintf(buffer, sizeof(buffer), "%s", peer);
 
   // Handle address updating
   } else if (bytes_read > 0) {
-    fprintf(stderr, "Updating RS registration of <%s> from (%d:%d)\n", buffer,
-            source_address, ntohs(request_src.sin_port));
+    Log(stderr, WARNING, "Updating RS registration of <%s> from (%d:%d)",
+        buffer, source_address, ntohs(request_src.sin_port));
     UpdateAddress(buffer, IntToIPString(source_address));
 
     char switcher[4096];
@@ -141,20 +141,18 @@ bool SimpleRendezvousServer::UpdateAddress(LogicalAddress name,
 
   for (i = subscriptions_[name].begin(); i != subscriptions_[name].end(); i++) {
     /**
-     * @todo  Improve this, we just use a gethostbyname lookup for now. In the
+     * @todo  For now we assume all communications deal with the same RS. In the
      *        future we need to do a full round robin to the DNS
      **/
-    struct hostent* subscriber_host = gethostbyname(i->first.c_str());
-
     struct sockaddr_in subscriber;
     subscriber.sin_family = domain_;
     subscriber.sin_addr.s_addr =
-      reinterpret_cast<struct in_addr*>(subscriber_host->h_addr)->s_addr;
+      IPStringToInt(registered_names_[i->first]);
     subscriber.sin_port = i->second;
     socklen_t subscriber_size = sizeof(subscriber);
 
     // Send out the actual update
-    fprintf(stderr, "Sending update of %s<%s> to %s\n", name.c_str(),
+    Log(stderr, WARNING, "Sending update of %s<%s> to %s", name.c_str(),
             address.c_str(), i->first.c_str());
 #ifdef UDP_APPLICATION
     sendto(update_socket, address.c_str(), address.length() + 1, 0,

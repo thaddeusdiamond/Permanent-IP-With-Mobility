@@ -34,7 +34,6 @@ using std::string;
  * We always lookup on the port specified by @ref GLOB_LOOKUP_PORT and register
  * on the port specified by @ref GLOB_REGIST_PORT to simplify our demo
  **/
-#define LOCALHOST 16777343
 #define GLOB_LOOKUP_PORT 16000
 #define GLOB_REGIST_PORT 16001
 
@@ -46,6 +45,8 @@ using std::string;
 #define MAX_CONNECTIONS 64
 #define FULL_SUBNET 16777215
 
+/** @todo In the future we should support TCP & SCTP applications, but as of now
+ *        we use this hash-define to say that we are using UDP always **/
 #define UDP_APPLICATION
 #define GLOB_TL UDP
 
@@ -62,6 +63,8 @@ enum TransportLayer {
   SCTP = SOCK_SEQPACKET,
 };
 
+/** @todo In the future we should support IPv6 applications, but as of now
+ *        we use this hash-define to say that we are using IPv4 always **/
 #define IPv4_APPLICATION
 #define GLOB_DOM NETv4
 

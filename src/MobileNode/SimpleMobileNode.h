@@ -25,6 +25,7 @@
 #include "MobileNode/MobileNode.h"
 
 using Utils::Die;
+using Utils::Log;
 using Utils::IPStringToInt;
 using Utils::GetCurrentIPAddress;
 

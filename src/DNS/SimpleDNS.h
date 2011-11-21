@@ -24,6 +24,7 @@
 #include "DNS/DNS.h"
 
 using Utils::Die;
+using Utils::Log;
 
 using std::tr1::unordered_map;
 

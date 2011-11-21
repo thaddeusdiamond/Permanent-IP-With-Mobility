@@ -27,6 +27,7 @@
 #include "Applications/Application.h"
 
 using Utils::Die;
+using Utils::Log;
 
 class EchoApp : public Application {
  public:

@@ -26,18 +26,18 @@ bool EchoApp::Start() {
 }
 
 bool EchoApp::ShutDown(const char* format, ...) {
-  fprintf(stderr, "Shutting Down Echo App (");
+  Log(stderr, DEBUG, "Shutting Down Echo App (");
 
   va_list arguments;
   va_start(arguments, format);
-  fprintf(stderr, format, arguments);
+  Log(stderr, WARNING, format, arguments);
   perror(")");
 
   close(app_socket_);
   mobile_node_->ShutDown(format, arguments);
   Signal::ExitProgram(0);
 
-  fprintf(stderr, "OK\n");
+  Log(stderr, SUCCESS, "OK");
   return false;
 }
 
@@ -72,7 +72,7 @@ bool EchoApp::ConnectToPeer() {
     return ShutDown("Error setting the socket to nonblocking");
 
   // Connect to the peer with registration at the mobile node daemon
-  fprintf(stderr, "Connecting to peer, please do not disconnect...");
+  Log(stderr, WARNING, "Connecting to peer, please do not disconnect...");
   peer_info_ = mobile_node_->RegisterPeer(app_socket_, peer_addr_);
   int backoff = 1;
   while (peer_info_ == NULL) {
@@ -80,7 +80,7 @@ bool EchoApp::ConnectToPeer() {
       return ShutDown("Peer lookup failed");
 
     sleep(backoff++);
-    fprintf(stderr, "Could not connect to peer, trying again.\n");
+    Log(stderr, ERROR, "Could not connect to peer, trying again.");
     peer_info_ = mobile_node_->RegisterPeer(app_socket_, peer_addr_);
   }
 
@@ -90,7 +90,7 @@ bool EchoApp::ConnectToPeer() {
   peer_container->sin_family = domain_;
   peer_container->sin_port = htons(peer_port_);
 
-  fprintf(stderr, " OK.\n");
+  Log(stderr, SUCCESS, "OK");
   return true;
 }
 
@@ -119,13 +119,13 @@ bool EchoApp::PrintReceivedData() {
 
     // Echo back the peer's communication
     if (string(buffer) != keyword_) {
-      fprintf(stderr, "Received message '%s' from %d:%d\n", buffer,
-              request_src.sin_addr.s_addr, ntohs(request_src.sin_port));
+      Log(stderr, SUCCESS, "Received message '%s' from %d:%d", buffer,
+          request_src.sin_addr.s_addr, ntohs(request_src.sin_port));
       SendMessage(buffer, reinterpret_cast<struct sockaddr*>(&request_src));
 
     // Received back our own, bury it...
     } else {
-      fprintf(stderr, "Received back our own communication. Burying...\n");
+      Log(stderr, WARNING, "Received back our own communication. Burying...");
       received_ = true;
     }
 
@@ -155,7 +155,7 @@ bool EchoApp::SendMessage(string message, struct sockaddr* peer_info) {
 #endif
 
   // Report out to the user that we're sending
-  fprintf(stderr, "Sending %s to our friend...\n", message.c_str());
+  Log(stderr, DEBUG, "Sending %s to our friend...", message.c_str());
   return true;
 }
 

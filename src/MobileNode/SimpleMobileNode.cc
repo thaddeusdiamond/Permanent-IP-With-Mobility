@@ -26,23 +26,23 @@ bool SimpleMobileNode::Start() {
 }
 
 bool SimpleMobileNode::ShutDown(const char* format, ...) {
-  fprintf(stderr, "Shutting Down Mobile Node (");
+  Log(stderr, DEBUG, "Shutting Down Mobile Node (");
 
   va_list arguments;
   va_start(arguments, format);
-  fprintf(stderr, format, arguments);
+  Log(stderr, WARNING, format, arguments);
   perror(")");
 
   Signal::ExitProgram(0);
 
-  fprintf(stderr, "OK\n");
+  Log(stderr, SUCCESS, "OK");
   return false;
 }
 
 void SimpleMobileNode::UpdateRendezvousServer() {
-  fprintf(stderr, "Location has changed, sending an update to the RS... ");
+  Log(stderr, WARNING, "Location has changed, sending an update to the RS... ");
   ConnectToServer(rendezvous_server_, rendezvous_port_, logical_address_);
-  fprintf(stderr, "OK\n");
+  Log(stderr, SUCCESS, "OK");
 }
 
 void SimpleMobileNode::PollSubscriptions() {
@@ -73,8 +73,9 @@ void SimpleMobileNode::PollSubscriptions() {
         static_cast<unsigned int>(IPStringToInt(rendezvous_server_))) {
       recvfrom(it->first, buffer, sizeof(buffer), 0,
                reinterpret_cast<struct sockaddr*>(&server), &server_size);
-      fprintf(stderr, "Updating socket #%d's struct sockaddr from %d to %s\n",
-              it->first, peer->sin_addr.s_addr, buffer);
+      Log(stderr, WARNING,
+          "Updating socket #%d's struct sockaddr from %d to %s", it->first,
+          peer->sin_addr.s_addr, buffer);
       peer->sin_addr.s_addr = IPStringToInt(string(buffer));
 
     // Error on the socket
@@ -144,7 +145,8 @@ NetworkMsg SimpleMobileNode::ConnectToServer(PhysicalAddress server_addr,
            &server_size);
 #elif TCP_APPLICATION
   server_size = 0;
-  fprintf(stderr, "TCP is not yet supported\n");
+  Log(stderr, FATAL, "TCP is not yet supported");
+  return "";
 #endif
 
   // Fix and close the socket we mutzed

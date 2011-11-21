@@ -26,8 +26,10 @@
 #include "RendezvousServer/RendezvousServer.h"
 
 using Utils::Die;
+using Utils::Log;
 using Utils::IntToIPName;
 using Utils::IntToIPString;
+using Utils::IPStringToInt;
 
 using std::tr1::unordered_map;
 using std::set;

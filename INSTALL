@@ -1,0 +1,37 @@
+Permanent IP Identifiers using Rendezvous Servers
+(c) 2011 Thaddeus Diamond, Professor Yang Yang, Ramakrishna Gummadi
+Yale University
+
+
+External Libraries
+==================
+In order to compile the external libraries associated with the project, please
+run:
+    $ ./install-ext
+
+
+Compilation
+===========
+To compile the source, please run:
+    $ make -C src
+
+
+Running the Demo
+================
+Three directories will be created: bin/, obj/ and logs/. In addition, three
+deployment scripts will be copied to the root directory.  These scripts can only
+be run from the Yale CS Zoo.  To run the demo, first type:
+    $ ./Server.Kill
+
+To ensure no existing servers remain active. Then, to deploy the DNS and simple
+rendezvous server, run:
+    $ ./Server.Deploy
+
+This will begin the servers.  Finally, run:
+    $ ./App.Deploy [Message] (python|tick) (^First Choice)
+
+Currently the demo only supports communication between nodes named python
+and tick (because of how the DNS is configured).  Run this on two nodes, and
+let argument one be the "from" and argument two be the "to".  This should be
+inverted at the different nodes.  Also, ensure that the message being
+transmitted by each node is distinct, otherwise errors will occur.

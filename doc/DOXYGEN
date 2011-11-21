@@ -2,7 +2,7 @@ In order to generate complete documentation for this project, please run:
   doxygen PermanentIP.doxygen
 
 Or (from inside the /src directory):
-  make with-doxy
+  make all with-doxy
 
 From this directory.  Navigate in your web browser to:
   file:///$(ROOT_PATH)/doc/html/index.html

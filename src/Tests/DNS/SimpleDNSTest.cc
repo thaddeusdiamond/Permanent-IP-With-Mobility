@@ -13,6 +13,7 @@
 #include "DNS/SimpleDNS.h"
 
 using Utils::GetCurrentIPAddress;
+using Utils::Log;
 
 // Non-member function required by PThread
 static inline void* RunDNSThread(void* dns) {
@@ -91,7 +92,7 @@ TEST_F(SimpleDNSTest, HandlesNetworkRequests) {
   setsockopt(sender, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&on),
              sizeof(on));
 
-  char buffer[19] = "python.cs.yale.edu";
+  char buffer[19] = "python";
 #ifdef UDP_APPLICATION
   sendto(sender, buffer, sizeof(buffer), 0,
          reinterpret_cast<struct sockaddr*>(&server),
@@ -101,7 +102,7 @@ TEST_F(SimpleDNSTest, HandlesNetworkRequests) {
            &server_size);
 #elif TCP_APPLICATION
   server_size = 0;
-  fprintf(stderr, "TCP is not yet supported\n");
+  Log(stderr, FATAL, "TCP is not yet supported");
   ASSERT_TRUE(false);
 #endif
   EXPECT_EQ(string(buffer), "128.36.232.37");
@@ -116,7 +117,7 @@ TEST_F(SimpleDNSTest, HandlesNetworkRequests) {
            &server_size);
 #elif TCP_APPLICATION
   server_size = 0;
-  fprintf(stderr, "TCP is not yet supported\n");
+  Log(stderr, FATAL, "TCP is not yet supported");
   ASSERT_TRUE(false);
 #endif
   EXPECT_EQ(string(failed_buffer), "");
