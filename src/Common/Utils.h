@@ -133,7 +133,7 @@ namespace Utils {
   static inline void Log(Level level, const char* format, ...) {
     va_list arguments;
     va_start(arguments, format);
-    
+
     if (log_file == NULL)
       OpenLogFiles();
 
@@ -189,11 +189,11 @@ namespace Utils {
 
     va_list arguments;
     va_start(arguments, format);
-    
+
     char buffer[4096];
     memset(buffer, 0, sizeof(buffer));
     vsprintf(buffer, format, arguments);
-    
+
     fprintf(filedes, buffer);
     fprintf(filedes, "\n");
     va_end(arguments);
