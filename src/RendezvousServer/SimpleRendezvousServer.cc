@@ -96,13 +96,18 @@ bool SimpleRendezvousServer::HandleRequests(int listening_socket, bool lookup) {
 
   // Handle address lookup
   if (bytes_read > 0 && lookup) {
-    const char* peer = ChangeSubscription(
-      pair<LogicalAddress, unsigned short>(IntToIPName(source_address),
-                                           request_src.sin_port),
-      buffer).c_str();
+    // The string sent is of the form subscriber|subscribee so we need to
+    // parse it out in order to update the subscription
+    NetworkMsg request = NetworkMsg(buffer);
+    LogicalAddress subscriber = request.substr(0, request.find("|"));
+    LogicalAddress subscribee = request.substr(request.find("|") + 1);
 
-    Log(stderr, SUCCESS, "Sending RS lookup of <%s, %s> to (%d:%d)", buffer,
-        peer, source_address, ntohs(request_src.sin_port));
+    const char* peer = ChangeSubscription(
+      pair<LogicalAddress, unsigned short>(subscriber, request_src.sin_port),
+      subscribee).c_str();
+
+    Log(stderr, SUCCESS, "Sending RS lookup of <%s, %s> to (%d:%d)",
+        subscriber.c_str(), peer, source_address, ntohs(request_src.sin_port));
     snprintf(buffer, sizeof(buffer), "%s", peer);
 
   // Handle address updating
@@ -152,8 +157,9 @@ bool SimpleRendezvousServer::UpdateAddress(LogicalAddress name,
     socklen_t subscriber_size = sizeof(subscriber);
 
     // Send out the actual update
-    Log(stderr, WARNING, "Sending update of %s<%s> to %s", name.c_str(),
-            address.c_str(), i->first.c_str());
+    Log(stderr, WARNING, "Sending update of %s<%s> to %s(%s:%d)", name.c_str(),
+            address.c_str(), i->first.c_str(),
+            registered_names_[i->first].c_str(), ntohs(i->second));
 #ifdef UDP_APPLICATION
     sendto(update_socket, address.c_str(), address.length() + 1, 0,
            reinterpret_cast<struct sockaddr*>(&subscriber), subscriber_size);

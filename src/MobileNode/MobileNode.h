@@ -12,6 +12,8 @@
 #ifndef _PERMANENTIP_MOBILENODE_MOBILENODE_H_
 #define _PERMANENTIP_MOBILENODE_MOBILENODE_H_
 
+#include "Common/Types.h"
+
 class MobileNode {
  public:
   /**
@@ -55,6 +57,24 @@ class MobileNode {
    **/
   virtual struct sockaddr* RegisterPeer(int app_socket,
                                         LogicalAddress peer_addr) = 0;
+  /**
+   * Any application needs to notify the mobile node client when a message is
+   * sent so that it can pack it into a buffer and resend if necessary.
+   *
+   * @param   app_socket    The app socket on which to send the message
+   * @param   message       The message being sent
+   **/
+  virtual void MessageSent(int app_socket, NetworkMsg message) = 0;
+
+  /**
+   * Any application needs to notify the mobile node client when a message is
+   * received so that it can free it from the buffer pool and not resend in
+   * the case of failure.
+   *
+   * @param   app_socket    The app socket on which to send the message
+   * @param   message       The message for which ACK was received
+   **/
+  virtual void MessageReceived(int app_socket, NetworkMsg message) = 0;
 
  protected:
   /**

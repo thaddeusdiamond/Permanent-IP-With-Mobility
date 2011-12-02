@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ $# -ne 0 ]; then
+  echo "Usage: ./Server.Kill"
+  exit $E_BADARGS
+fi
+
 # The following file kills active RS and DNS deployed using Server.deploy
 ssh dolphin "killall -9 RunDNS &> /dev/null" & &> /dev/null
 ssh cobra   "killall -9 RunRS &> /dev/null"  & &> /dev/null

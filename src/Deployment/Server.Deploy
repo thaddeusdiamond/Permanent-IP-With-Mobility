@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ $# -ne 0 ]; then
+  echo "Usage: ./Server.Deploy"
+  exit $E_BADARGS
+fi
+
 # The following file deploys a rendezvous server and a mobile node to the
 # servers necessary given the file's configuration
 ssh dolphin "cd $PWD; bin/RunDNS SDNS &> /dev/null" & &> /dev/null

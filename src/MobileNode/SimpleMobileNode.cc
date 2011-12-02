@@ -55,7 +55,7 @@ void SimpleMobileNode::PollSubscriptions() {
   for (it = app_sockets_.begin(); it != app_sockets_.end(); it++) {
     struct sockaddr_in* peer =
       reinterpret_cast<struct sockaddr_in*>(it->second);
-    socklen_t server_size = sizeof(*peer);
+    socklen_t server_size;
 
     char buffer[4096];
     memset(buffer, 0, sizeof(buffer));
@@ -66,6 +66,7 @@ void SimpleMobileNode::PollSubscriptions() {
 #elif TCP_APPLICATION
     int bytes_read = -1;
     ShutDown("TCP is not yet supported");
+    return;
 #endif
 
     // Update the sockets with a sockopt and update the peer structs
@@ -77,6 +78,22 @@ void SimpleMobileNode::PollSubscriptions() {
           "Updating socket #%d's struct sockaddr from %d to %s", it->first,
           peer->sin_addr.s_addr, buffer);
       peer->sin_addr.s_addr = IPStringToInt(string(buffer));
+
+      /// Resend all outstanding messages
+      set<NetworkMsg>::iterator msg_it;
+      set<NetworkMsg> unsent = app_socket_messages_[it->first];
+      for (msg_it = unsent.begin(); msg_it != unsent.end(); msg_it++) {
+        Log(stderr, WARNING, "Resending %s to %s", msg_it->c_str(), buffer);
+
+#ifdef UDP_APPLICATION
+        socklen_t peer_size = sizeof(*peer);
+        sendto(it->first, msg_it->c_str(), msg_it->length(), 0,
+               reinterpret_cast<struct sockaddr*>(peer), peer_size);
+#elif TCP_APPLICATION
+        ShutDown("TCP is not yet supported");
+        return;
+#endif
+      }
 
     // Error on the socket
     } else if (bytes_read < 0 && errno != EWOULDBLOCK && errno != EAGAIN) {
@@ -93,7 +110,8 @@ struct sockaddr* SimpleMobileNode::RegisterPeer(int app_socket,
   if (rs_addr == "")
     return NULL;
   PhysicalAddress peer_loc = ConnectToServer(rs_addr, GLOB_LOOKUP_PORT,
-                                             peer_addr, app_socket);
+                                             logical_address_ + "|" + peer_addr,
+                                             app_socket);
   if (peer_loc == "")
     return NULL;
 
@@ -144,8 +162,7 @@ NetworkMsg SimpleMobileNode::ConnectToServer(PhysicalAddress server_addr,
            reinterpret_cast<struct sockaddr*>(&server),
            &server_size);
 #elif TCP_APPLICATION
-  server_size = 0;
-  Log(stderr, FATAL, "TCP is not yet supported");
+  ShutDown("TCP is not yet supported");
   return "";
 #endif
 
@@ -156,4 +173,14 @@ NetworkMsg SimpleMobileNode::ConnectToServer(PhysicalAddress server_addr,
     close(sender);
 
   return NetworkMsg(buffer);
+}
+
+void SimpleMobileNode::MessageSent(int app_socket, NetworkMsg message) {
+  app_socket_messages_[app_socket].insert(message);
+}
+
+void SimpleMobileNode::MessageReceived(int app_socket, NetworkMsg message) {
+  set<NetworkMsg> buffer_log = app_socket_messages_[app_socket];
+  if (buffer_log.count(message) > 0)
+    buffer_log.erase(buffer_log.find(message));
 }

@@ -26,9 +26,9 @@ using std::string;
  * Addresses and messages sent across the network are defined as STL strings
  * for simplicity and power
  **/  
-#define LogicalAddress string
-#define PhysicalAddress string
-#define NetworkMsg string
+typedef string LogicalAddress;
+typedef string PhysicalAddress;
+typedef string NetworkMsg;
 
 /**
  * We always lookup on the port specified by @ref GLOB_LOOKUP_PORT and register

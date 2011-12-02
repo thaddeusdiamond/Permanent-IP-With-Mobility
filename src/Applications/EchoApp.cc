@@ -116,12 +116,16 @@ bool EchoApp::PrintReceivedData() {
     recvfrom(app_socket_, buffer, sizeof(buffer), 0,
              reinterpret_cast<struct sockaddr*>(&request_src),
              &request_src_size);
+    mobile_node_->MessageReceived(app_socket_, NetworkMsg(buffer));
 
     // Echo back the peer's communication
     if (string(buffer) != keyword_) {
       Log(stderr, SUCCESS, "Received message '%s' from %d:%d", &buffer[0],
           request_src.sin_addr.s_addr, ntohs(request_src.sin_port));
       SendMessage(buffer, reinterpret_cast<struct sockaddr*>(&request_src));
+
+      // HACK: Claim we received the message because we don't expect this back
+      mobile_node_->MessageReceived(app_socket_, NetworkMsg(buffer));
 
     // Received back our own, bury it...
     } else {
@@ -137,7 +141,7 @@ bool EchoApp::PrintReceivedData() {
   return true;
 }
 
-bool EchoApp::SendMessage(string message, struct sockaddr* peer_info) {
+bool EchoApp::SendMessage(NetworkMsg message, struct sockaddr* peer_info) {
   // Avoid sending dups and set the sentinel if this is our heartbeat going out
   if (message == keyword_ && !received_)
     return false;
@@ -156,6 +160,7 @@ bool EchoApp::SendMessage(string message, struct sockaddr* peer_info) {
 
   // Report out to the user that we're sending
   Log(stderr, DEBUG, "Sending %s to our friend...", message.c_str());
+  mobile_node_->MessageSent(app_socket_, message);
   return true;
 }
 

@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 #include "RendezvousServer/SimpleRendezvousServer.h"
 
+using Utils::IntToIPName;
 using Utils::GetCurrentIPAddress;
 using Utils::Log;
 
@@ -150,7 +151,10 @@ TEST_F(SimpleRendezvousServerTest, HandlesNetworkRequests) {
 
   // Send the lookup for, again say tick, it should match current IP Address
   server.sin_port = htons(GLOB_LOOKUP_PORT);
-  char lookup_buffer[4096] = "tick.cs.yale.edu";
+  char lookup_buffer[4096];
+  strncpy(lookup_buffer,
+    (IntToIPName(GetCurrentIPAddress()) + "|tick.cs.yale.edu").c_str(),
+    sizeof(lookup_buffer));
 #ifdef UDP_APPLICATION
   sendto(sender, lookup_buffer, sizeof(lookup_buffer), 0,
          reinterpret_cast<struct sockaddr*>(&server),
@@ -172,7 +176,9 @@ TEST_F(SimpleRendezvousServerTest, HandlesNetworkRequests) {
               "tick.cs.yale.edu"].end());
 
   // Send the lookup a final time to unsubscribe
-  strncpy(lookup_buffer, "tick.cs.yale.edu", sizeof(lookup_buffer));
+  strncpy(lookup_buffer, 
+    (IntToIPName(GetCurrentIPAddress()) + "|tick.cs.yale.edu").c_str(),
+    sizeof(lookup_buffer));
 #ifdef UDP_APPLICATION
   sendto(sender, lookup_buffer, sizeof(lookup_buffer), 0,
          reinterpret_cast<struct sockaddr*>(&server),
@@ -184,6 +190,7 @@ TEST_F(SimpleRendezvousServerTest, HandlesNetworkRequests) {
   Log(stderr, FATAL, "TCP is not yet supported");
   ASSERT_TRUE(false);
 #endif
+
   EXPECT_EQ(string(lookup_buffer), IntToIPString(GetCurrentIPAddress()));
   EXPECT_EQ(rendezvous_server_->subscriptions_[
               "tick.cs.yale.edu"].find(

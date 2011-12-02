@@ -18,6 +18,7 @@
 #include <cassert>
 #include <cstdarg>
 #include <string>
+#include <set>
 
 #include "Common/Signal.h"
 #include "Common/Types.h"
@@ -31,6 +32,7 @@ using Utils::GetCurrentIPAddress;
 
 using std::tr1::unordered_map;
 using std::string;
+using std::set;
 
 class SimpleMobileNode : public MobileNode {
  public:
@@ -55,6 +57,8 @@ class SimpleMobileNode : public MobileNode {
   virtual bool ShutDown(const char* format, ...);
   virtual struct sockaddr* RegisterPeer(int app_socket,
                                         LogicalAddress peer_addr);
+  virtual void MessageSent(int app_socket, NetworkMsg message);
+  virtual void MessageReceived(int app_socket, NetworkMsg message);
 
  protected:
   virtual void UpdateRendezvousServer();
@@ -119,11 +123,18 @@ class SimpleMobileNode : public MobileNode {
    * ...and protocol (Default: @ref GLOB_PROTO)...
    **/
   Protocol protocol_;
+
   /**
    * We keep track of the applications with open sockets (a mapping of
    * app socket to the peer sockaddr struct it connects to)
    **/
   unordered_map<int, struct sockaddr*> app_sockets_;
+
+  /**
+   * We keep track of a list of previously sent messages over the network
+   * so that if we need to reconnect we can resend
+   **/
+  unordered_map<int, set<NetworkMsg> > app_socket_messages_;
 };
 
 #endif  // _PERMANENTIP_MOBILENODE_SIMPLEMOBILENODE_H_
